@@ -33,17 +33,17 @@ class DoctrineService
     /**
      * @var string Default DBAL Connection name. 
      */
-    private $defaultConnection = 'default';
+    public $defaultConnection = 'default';
 
     /**
      * @var default Default Cache Instance name.
      */
-    private $defaultCacheInstance = 'default';
+    public $defaultCacheInstance = 'default';
 
     /**
      * @var string Default ORM EntityManager name.
      */
-    private $defaultEntityManager = 'default';
+    public $defaultEntityManager = 'default';
 
     /**
      * @var array Doctrine Service configuration.
@@ -100,9 +100,9 @@ class DoctrineService
 
         // Defining Doctrine Service configuration
         $this->configuration = array(
-            'dbal'  => $dbalConfig,
-            'cache' => $cacheConfig,
-            'orm'   => $ormConfig
+            'dbal'  => $dbalConfig['connections'],
+            'cache' => $cacheConfig['instances'],
+            'orm'   => $ormConfig['entityManagers']
         );
     }
 
@@ -432,7 +432,7 @@ class DoctrineService
 
             if (isset($config['options']['servers'])) {
                 foreach ($config['options']['servers'] as $server) {
-                    $server = array_merge_recursive($defaultServer, $server);
+                    $server = array_replace_recursive($defaultServer, $server);
 
                     $memcache->addServer(
                         $server['host'],
@@ -536,7 +536,7 @@ class DoctrineService
         );
 
         foreach ($config as $driver) {
-            $driver = array_merge_recursive($defaultMetadataDriver, $driver);
+            $driver = array_replace_recursive($defaultMetadataDriver, $driver);
             
             $reflClass = new \ReflectionClass($driver['adapterClass']);
             $nestedDriver = null;

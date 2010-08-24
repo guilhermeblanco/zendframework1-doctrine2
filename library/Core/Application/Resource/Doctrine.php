@@ -67,6 +67,10 @@ class Core_Application_Resource_Doctrine extends \Zend_Application_Resource_Reso
 
         require_once $doctrineIncludePath . '/Common/ClassLoader.php';
 
+        $symfonyAutoloader = new \Doctrine\Common\ClassLoader('Symfony');
+        $autoloader->pushAutoloader(array($symfonyAutoloader, 'loadClass'), 'Symfony');
+
+
         $doctrineAutoloader = new \Doctrine\Common\ClassLoader('Doctrine');
         $autoloader->pushAutoloader(array($doctrineAutoloader, 'loadClass'), 'Doctrine');
 
