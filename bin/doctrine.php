@@ -17,20 +17,20 @@ set_include_path(implode(PATH_SEPARATOR, array(
 /** Zend_Application */
 require_once 'Zend/Application.php';
 
-// Create application, bootstrap, and run
-$application = new Zend_Application(
-    APPLICATION_ENV,
-    APPLICATION_PATH . '/configs/application.ini'
-);
+
+// Bootstrapping resources
 $bootstrap = $application->bootstrap()->getBootstrap();
+$bootstrap->bootstrap('Config')
+          ->bootstrap('Doctrine');
 
-$bootstrap->bootstrap('Doctrine');
-
-// Retrieve Doctrine Service
-$service = $application->getBootstrap()->getResource('doctrine');
+// Retrieve Doctrine Container resource
+$container = $application->getBootstrap()->getResource('doctrine');
 
 // Console
-$cli = new \Symfony\Components\Console\Application('Doctrine Command Line Interface', \Doctrine\Common\Version::VERSION);
+$cli = new \Symfony\Component\Console\Application(
+    'Doctrine Command Line Interface',
+    \Doctrine\Common\Version::VERSION
+);
 
 try {
     // Bootstrapping Console HelperSet

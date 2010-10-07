@@ -18,17 +18,19 @@
  * <http://www.doctrine-project.org>.
  */
 
-namespace Core\Application\Service;
+namespace Core\Application\Container;
+
+use Core\Application\Exception;
 
 /**
- * Doctrine Service class.
+ * Doctrine Container class.
  *
  * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
  * @link www.doctrine-project.org
  *
  * @author Guilherme Blanco <guilhermeblanco@hotmail.com>
  */
-class DoctrineService
+class DoctrineContainer
 {
     /**
      * @var string Default DBAL Connection name. 
@@ -46,7 +48,7 @@ class DoctrineService
     public $defaultEntityManager = 'default';
 
     /**
-     * @var array Doctrine Service configuration.
+     * @var array Doctrine Context configuration.
      */
     private $configuration = array();
 
@@ -65,10 +67,11 @@ class DoctrineService
      */
     private $entityManagers = array();
 
+    
     /**
-     * Doctrine Service constructor.
+     * Constructor.
      *
-     * @param array $config Doctrine Service configuration
+     * @param array $config Doctrine Container configuration
      */
     public function __construct(array $config = array())
     {
@@ -98,7 +101,7 @@ class DoctrineService
             $this->defaultEntityManager = $ormConfig['defaultEntityManager'];
         }
 
-        // Defining Doctrine Service configuration
+        // Defining Doctrine Context configuration
         $this->configuration = array(
             'dbal'  => $dbalConfig['connections'],
             'cache' => $cacheConfig['instances'],
@@ -107,9 +110,9 @@ class DoctrineService
     }
 
     /**
-     * Prepare DBAL COnnections configurations.
+     * Prepare DBAL Connections configurations.
      *
-     * @param array $config Doctrine Service configuration
+     * @param array $config Doctrine Container configuration
      * @return array
      */
     private function prepareDBALConfiguration(array $config = array())
@@ -160,7 +163,7 @@ class DoctrineService
     /**
      * Prepare Cache Instances configurations.
      *
-     * @param array $config Doctrine Service configuration
+     * @param array $config Doctrine Container configuration
      * @return array
      */
     private function prepareCacheInstanceConfiguration(array $config = array())
@@ -201,7 +204,7 @@ class DoctrineService
     /**
      * Prepare ORM EntityManagers configurations.
      *
-     * @param array $config Doctrine Service configuration
+     * @param array $config Doctrine Container configuration
      * @return array
      */
     private function prepareORMConfiguration(array $config = array())
@@ -233,8 +236,10 @@ class DoctrineService
             )
         );
 
-        if (isset($config['entityManagers'])) {
-            $configEntityManagers = $config['entityManagers'];
+        $entityManagers = array();
+
+        if (isset($ormConfig['entityManagers'])) {
+            $configEntityManagers = $ormConfig['entityManagers'];
 
             foreach ($configEntityManagers as $name => $entityManager) {
                 $name = isset($entityManager['id']) ? $entityManager['id'] : $name;
@@ -248,16 +253,16 @@ class DoctrineService
 
         return array(
             'defaultEntityManager' => $defaultEntityManagerName,
-            'entityManagers'        => $entityManagers
+            'entityManagers'       => $entityManagers
         );
     }
 
     /**
      * Retrieve DBAL Connection based on its name. If no argument is provided,
      * it will attempt to get the default Connection.
-     * If DBAL Connection could not be retrieved, ServiceException is thrown.
+     * If DBAL Connection could not be retrieved, ContextException is thrown.
      *
-     * @throws Core\Application\Service\ServiceException
+     * @throws Core\Application\Container\ContainerException
      *
      * @param string $connName Optional DBAL Connection name
      *
@@ -271,7 +276,7 @@ class DoctrineService
         if ( ! isset($this->connections[$connName])) {
             // Check if DBAL Connection is configured
             if ( ! isset($this->configuration['dbal'][$connName])) {
-                throw new ServiceException("Unable to start unknown Doctrine DBAL Connection '{$connName}'.");
+                throw new Exception\NameNotFoundException("Unable to find Doctrine DBAL Connection '{$connName}'.");
             }
 
             $this->connections[$connName] = $this->startDBALConnection($this->configuration['dbal'][$connName]);
@@ -285,9 +290,9 @@ class DoctrineService
     /**
      * Retrieve Cache Instance based on its name. If no argument is provided,
      * it will attempt to get the default Instance.
-     * If Cache Instance could not be retrieved, ServiceException is thrown.
+     * If Cache Instance could not be retrieved, ContextException is thrown.
      *
-     * @throws Core\Application\Service\ServiceException
+     * @throws Core\Application\Container\ContainerException
      *
      * @param string $cacheName Optional Cache Instance name
      *
@@ -301,7 +306,7 @@ class DoctrineService
         if ( ! isset($this->cacheInstances[$cacheName])) {
             // Check if Cache Instance is configured
             if ( ! isset($this->configuration['cache'][$cacheName])) {
-                throw new ServiceException("Unable to start unknown Doctrine Cache Instance '{$cacheName}'.");
+                throw new Exception\NameNotFoundException("Unable to find Doctrine Cache Instance '{$cacheName}'.");
             }
 
             $this->cacheInstances[$cacheName] = $this->startCacheInstance($this->configuration['cache'][$cacheName]);
@@ -315,10 +320,10 @@ class DoctrineService
     /**
      * Retrieve ORM EntityManager based on its name. If no argument provided,
      * it will attempt to get the default EntityManager.
-     * If ORM EntityManager could not be retrieved, ServiceException is thrown.
+     * If ORM EntityManager could not be retrieved, ContextException is thrown.
      *
-     * @throws Core\Application\Service\ServiceException
-     * 
+     * @throws Core\Application\Container\ContainerException
+     *
      * @param string $emName Optional ORM EntityManager name
      *
      * @return Doctrine\ORM\EntityManager ORM EntityManager
@@ -331,7 +336,7 @@ class DoctrineService
         if ( ! isset($this->entityManagers[$emName])) {
             // Check if ORM EntityManager is configured
             if ( ! isset($this->configuration['orm'][$emName])) {
-                throw new ServiceException("Unable to start unknown Doctrine ORM EntityManager '{$emName}'.");
+                throw new Exception\NameNotFoundException("Unable to find Doctrine ORM EntityManager '{$emName}'.");
             }
 
             $this->entityManagers[$emName] = $this->startORMEntityManager($this->configuration['orm'][$emName]);
@@ -485,7 +490,9 @@ class DoctrineService
         }
 
         // Proxy configuration
-        $configuration->setAutoGenerateProxyClasses($config['proxy']['autoGenerateClasses']);
+        $configuration->setAutoGenerateProxyClasses(
+            ! in_array($config['proxy']['autoGenerateClasses'], array("0", "false", false))
+        );
         $configuration->setProxyNamespace($config['proxy']['namespace']);
         $configuration->setProxyDir($config['proxy']['dir']);
 
@@ -547,9 +554,9 @@ class DoctrineService
             ) {
                 $annotationReaderClass = $driver['annotationReaderClass'];
                 $annotationReader = new $annotationReaderClass($this->getCacheInstance($driver['annotationReaderCache']));
-                $annotationReader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping');
+                $annotationReader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
 
-                foreach ($driver['annnotationReaderNamespaces'] as $alias => $namespace) {
+                foreach ($driver['annotationReaderNamespaces'] as $alias => $namespace) {
                     $annotationReader->setAnnotationNamespaceAlias($namespace, $alias);
                 }
 
@@ -559,6 +566,11 @@ class DoctrineService
             }
             
             $metadataDriver->addDriver($nestedDriver, $driver['mappingNamespace']);
+        }
+
+        if (($drivers = $metadataDriver->getDrivers()) && count($drivers) == 1) {
+            reset($drivers);
+            $metadataDriver = $drivers[key($drivers)];
         }
 
         return $metadataDriver;
