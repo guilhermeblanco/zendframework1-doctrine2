@@ -113,6 +113,7 @@ class DoctrineContainer
      * Prepare DBAL Connections configurations.
      *
      * @param array $config Doctrine Container configuration
+     *
      * @return array
      */
     private function prepareDBALConfiguration(array $config = array())
@@ -164,6 +165,7 @@ class DoctrineContainer
      * Prepare Cache Instances configurations.
      *
      * @param array $config Doctrine Container configuration
+     *
      * @return array
      */
     private function prepareCacheInstanceConfiguration(array $config = array())
@@ -205,6 +207,7 @@ class DoctrineContainer
      * Prepare ORM EntityManagers configurations.
      *
      * @param array $config Doctrine Container configuration
+     *
      * @return array
      */
     private function prepareORMConfiguration(array $config = array())
@@ -260,9 +263,9 @@ class DoctrineContainer
     /**
      * Retrieve DBAL Connection based on its name. If no argument is provided,
      * it will attempt to get the default Connection.
-     * If DBAL Connection could not be retrieved, ContextException is thrown.
+     * If DBAL Connection name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Core\Application\Container\ContainerException
+     * @throws Core\Application\Exception\NameNotFoundException
      *
      * @param string $connName Optional DBAL Connection name
      *
@@ -290,9 +293,9 @@ class DoctrineContainer
     /**
      * Retrieve Cache Instance based on its name. If no argument is provided,
      * it will attempt to get the default Instance.
-     * If Cache Instance could not be retrieved, ContextException is thrown.
+     * If Cache Instance name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Core\Application\Container\ContainerException
+     * @throws Core\Application\Exception\NameNotFoundException
      *
      * @param string $cacheName Optional Cache Instance name
      *
@@ -320,9 +323,9 @@ class DoctrineContainer
     /**
      * Retrieve ORM EntityManager based on its name. If no argument provided,
      * it will attempt to get the default EntityManager.
-     * If ORM EntityManager could not be retrieved, ContextException is thrown.
+     * If ORM EntityManager name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Core\Application\Container\ContainerException
+     * @throws Core\Application\Exception\NameNotFoundException
      *
      * @param string $emName Optional ORM EntityManager name
      *
@@ -351,6 +354,7 @@ class DoctrineContainer
      * Initialize the DBAL Connection.
      *
      * @param array $config DBAL Connection configuration.
+     *
      * @return Doctrine\DBAL\Connection
      */
     private function startDBALConnection(array $config = array())
@@ -366,6 +370,7 @@ class DoctrineContainer
      * Initialize the DBAL Configuration.
      *
      * @param array $config DBAL Connection configuration.
+     *
      * @return Doctrine\DBAL\Configuration
      */
     private function startDBALConfiguration(array $config = array())
@@ -386,6 +391,7 @@ class DoctrineContainer
      * Initialize the EventManager.
      *
      * @param array $config DBAL Connection configuration.
+     *
      * @return Doctrine\Common\EventManager
      */
     private function startDBALEventManager(array $config = array())
@@ -405,6 +411,7 @@ class DoctrineContainer
      * Initialize Cache Instance.
      *
      * @param array $config Cache Instance configuration.
+     *
      * @return Doctrine\Common\Cache\Cache
      */
     private function startCacheInstance(array $config = array())
@@ -461,6 +468,7 @@ class DoctrineContainer
      * Initialize ORM EntityManager.
      *
      * @param array $config ORM EntityManager configuration.
+     *
      * @return Doctrine\ORM\EntityManager
      */
     private function startORMEntityManager(array $config = array())
@@ -475,6 +483,7 @@ class DoctrineContainer
      * Initialize ORM Configuration.
      *
      * @param array $config ORM EntityManager configuration.
+     *
      * @return Doctrine\ORM\Configuration
      */
     private function startORMConfiguration(array $config = array())
@@ -526,6 +535,7 @@ class DoctrineContainer
      * Initialize ORM Metadata drivers.
      *
      * @param array $config ORM Mapping drivers.
+     *
      * @return Doctrine\ORM\Mapping\Driver\DriverChain
      */
     private function startORMMetadata(array $config = array())
