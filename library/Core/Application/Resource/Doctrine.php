@@ -40,8 +40,6 @@ class Core_Application_Resource_Doctrine extends \Zend_Application_Resource_Reso
      */
     public function init()
     {
-        $this->getBootstrap()->bootstrap("Config");
-        
         $config = $this->getOptions();
         
         // Bootstrapping Doctrine autoloaders
