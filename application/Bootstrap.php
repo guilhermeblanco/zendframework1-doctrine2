@@ -11,7 +11,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $autoloader->pushAutoloader(array($fmmAutoloader, 'loadClass'), 'Core');
         $appAutoloader = new \Doctrine\Common\ClassLoader('Application');
         $autoloader->pushAutoloader(array($appAutoloader, 'loadClass'), 'Application');
-    }
+    }  
 
 }
 
