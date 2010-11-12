@@ -25,14 +25,13 @@ $application = new Zend_Application(
 
 // Bootstrapping resources
 $bootstrap = $application->bootstrap()->getBootstrap();
-$bootstrap->bootstrap('Config')
-          ->bootstrap('Doctrine');
+$bootstrap->bootstrap('Doctrine');
 
 // Retrieve Doctrine Container resource
 $container = $application->getBootstrap()->getResource('doctrine');
 
 // Console
-$cli = new \Symfony\Component\Console\Application(
+$cli = new \Symfony\Components\Console\Application(
     'Doctrine Command Line Interface',
     \Doctrine\Common\Version::VERSION
 );
@@ -41,11 +40,11 @@ try {
     // Bootstrapping Console HelperSet
     $helperSet = array();
 
-    if (($dbal = $service->getConnection(getenv('CONN') ?: $service->defaultConnection)) !== null) {
+    if (($dbal = $container->getConnection(getenv('CONN') ?: $container->defaultConnection)) !== null) {
         $helperSet['db'] = new \Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($dbal);
     }
 
-    if (($em = $service->getEntityManager(getenv('EM') ?: $service->defaultEntityManager)) !== null) {
+    if (($em = $container->getEntityManager(getenv('EM') ?: $container->defaultEntityManager)) !== null) {
         $helperSet['em'] = new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em);
     }
 } catch (\Exception $e) {
