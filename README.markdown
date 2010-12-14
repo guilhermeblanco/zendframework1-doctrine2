@@ -47,7 +47,27 @@ Here is a good example of a Memcache driver with multiple servers being used.
 
 ### Configuring DBAL
 
-TBD
+Doctrine DataBase Abstraction Layer follows the same idea of Cache drivers.
+
+	; Points to default connection to be used. Optional if only one connection is defined
+	resources.doctrine.dbal.defaultConnection = default
+
+	; DBAL Connection configuration for "default" connection
+	;resources.doctrine.dbal.connections.default.id = default
+	;resources.doctrine.dbal.connections.default.eventManagerClass  = "Doctrine\Common\EventManager"
+	;resources.doctrine.dbal.connections.default.eventSubscribers[] = "DoctrineExtensions\Sluggable\SluggableSubscriber"
+	;resources.doctrine.dbal.connections.default.configurationClass = "Doctrine\DBAL\Configuration"
+	;resources.doctrine.dbal.connections.default.sqlLoggerClass     = "Doctrine\DBAL\Logging\EchoSQLLogger"
+
+	; Database configuration
+	;resources.doctrine.dbal.connections.default.parameters.wrapperClass = ""
+	resources.doctrine.dbal.connections.default.parameters.driver   = "pdo_mysql"
+	resources.doctrine.dbal.connections.default.parameters.dbname   = "fmm"
+	resources.doctrine.dbal.connections.default.parameters.host = "localhost"
+	resources.doctrine.dbal.connections.default.parameters.port = 3306
+	resources.doctrine.dbal.connections.default.parameters.user = "root"
+	resources.doctrine.dbal.connections.default.parameters.password = "password"
+	;resources.doctrine.dbal.connections.default.parameters.driverOptions.ATTR_USE_BUFFERED_QUERIES = true
 
 ### Configuring ORM
 
@@ -91,7 +111,7 @@ The following API exposes all available Doctrine Container methods to be used by
 
 	<?php
 
-	namespace Core\Application\Container;
+	namespace Bisna\Application\Container;
 
 	/**
 	 * Doctrine Container class.
