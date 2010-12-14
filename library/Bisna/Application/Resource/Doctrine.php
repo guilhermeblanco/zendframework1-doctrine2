@@ -19,9 +19,9 @@
  */
 
 // Zend Framework cannot deal with Resources using namespaces
-//namespace Core\Application\Resource;
+//namespace Bisna\Application\Resource;
 
-use Core\Application\Container;
+use Bisna\Application\Container;
 
 /**
  * Zend Application Resource Doctrine class
@@ -31,7 +31,7 @@ use Core\Application\Container;
  *
  * @author Guilherme Blanco <guilhermeblanco@hotmail.com>
  */
-class Core_Application_Resource_Doctrine extends \Zend_Application_Resource_ResourceAbstract
+class Bisna_Application_Resource_Doctrine extends \Zend_Application_Resource_ResourceAbstract
 {
     /**
      * Initializes Doctrine Context.
@@ -40,8 +40,6 @@ class Core_Application_Resource_Doctrine extends \Zend_Application_Resource_Reso
      */
     public function init()
     {
-        $this->getBootstrap()->bootstrap("Config");
-        
         $config = $this->getOptions();
         
         // Bootstrapping Doctrine autoloaders

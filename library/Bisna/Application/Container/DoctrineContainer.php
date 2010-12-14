@@ -18,9 +18,9 @@
  * <http://www.doctrine-project.org>.
  */
 
-namespace Core\Application\Container;
+namespace Bisna\Application\Container;
 
-use Core\Application\Exception;
+use Bisna\Application\Exception;
 
 /**
  * Doctrine Container class.
@@ -265,7 +265,7 @@ class DoctrineContainer
      * it will attempt to get the default Connection.
      * If DBAL Connection name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Core\Application\Exception\NameNotFoundException
+     * @throws Bisna\Application\Exception\NameNotFoundException
      *
      * @param string $connName Optional DBAL Connection name
      *
@@ -295,7 +295,7 @@ class DoctrineContainer
      * it will attempt to get the default Instance.
      * If Cache Instance name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Core\Application\Exception\NameNotFoundException
+     * @throws Bisna\Application\Exception\NameNotFoundException
      *
      * @param string $cacheName Optional Cache Instance name
      *
@@ -325,7 +325,7 @@ class DoctrineContainer
      * it will attempt to get the default EntityManager.
      * If ORM EntityManager name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Core\Application\Exception\NameNotFoundException
+     * @throws Bisna\Application\Exception\NameNotFoundException
      *
      * @param string $emName Optional ORM EntityManager name
      *

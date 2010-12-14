@@ -1,6 +1,6 @@
 <?php
 
-namespace Core\Application\Exception;
+namespace Bisna\Application\Exception;
 
 /**
  * NameNotFoundException class.

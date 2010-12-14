@@ -41,19 +41,19 @@ try {
     // Bootstrapping Console HelperSet
     $helperSet = array();
 
-    if (($dbal = $service->getConnection(getenv('CONN') ?: $service->defaultConnection)) !== null) {
+    if (($dbal = $container->getConnection(getenv('CONN') ?: $container->defaultConnection)) !== null) {
         $helperSet['db'] = new \Doctrine\DBAL\Tools\Console\Helper\ConnectionHelper($dbal);
     }
 
-    if (($em = $service->getEntityManager(getenv('EM') ?: $service->defaultEntityManager)) !== null) {
+    if (($em = $container->getEntityManager(getenv('EM') ?: $container->defaultEntityManager)) !== null) {
         $helperSet['em'] = new \Doctrine\ORM\Tools\Console\Helper\EntityManagerHelper($em);
     }
 } catch (\Exception $e) {
-    $cli->renderException($e, new \Symfony\Components\Console\Output\ConsoleOutput());
+    $cli->renderException($e, new \Symfony\Component\Console\Output\ConsoleOutput());
 }
 
 $cli->setCatchExceptions(true);
-$cli->setHelperSet(new \Symfony\Components\Console\Helper\HelperSet($helperSet));
+$cli->setHelperSet(new \Symfony\Component\Console\Helper\HelperSet($helperSet));
 
 $cli->addCommands(array(
     // DBAL Commands
