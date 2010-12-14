@@ -57,8 +57,88 @@ TBD
 
 ### Accessing Doctrine Container
 
-TBD
+It is strongly recommended to encapsulate the default Zend_Controller_Action class into our project's one.
+By using this encapsulation, it allows you to include your own support without having to hack default Zend implementation.
+
+A very rudimentary implementation of a possible base class is here:
+
+
+	<?php
+
+	namespace Bisna\Controller;
+
+	/**
+	 * Action class.
+	 *
+	 * @author Guilherme Blanco <guilhermeblanco@hotmail.com>
+	 */
+	class Action extends \Zend_Controller_Action
+	{
+	    /**
+	     * Retrieve the Doctrine Container.
+	     *
+	     * @return Bisna\Application\Container\DoctrineContainer
+	     */
+	    public function getDoctrineContainer()
+	    {
+	        return $this->getInvokeArg('bootstrap')->getResource('doctrine');
+	    }		
+	}
 
 ### Doctrine Container API
 
-TBD
+The following API exposes all available Doctrine Container methods to be used by developers:
+
+	<?php
+
+	namespace Core\Application\Container;
+
+	/**
+	 * Doctrine Container class.
+ 	 *
+	 * @license http://www.opensource.org/licenses/lgpl-license.php LGPL
+	 * @link www.doctrine-project.org
+	 *
+	 * @author Guilherme Blanco <guilhermeblanco@hotmail.com>
+	 */
+	class DoctrineContainer
+	{
+	    /**
+	     * Retrieve Cache Instance based on its name. If no argument is provided,
+	     * it will attempt to get the default Instance.
+	     * If Cache Instance name could not be found, NameNotFoundException is thrown.
+	     *
+	     * @throws Bisna\Application\Exception\NameNotFoundException
+	     *
+	     * @param string $cacheName Optional Cache Instance name
+	     *
+	     * @return Doctrine\Common\Cache\Cache Cache Instance
+	     */
+	    public function getCacheInstance($cacheName = null);
+
+	    /**
+	     * Retrieve DBAL Connection based on its name. If no argument is provided,
+	     * it will attempt to get the default Connection.
+	     * If DBAL Connection could not be retrieved, NameNotFoundException is thrown.
+	     *
+	     * @throws Bisna\Application\Exception\NameNotFoundException
+	     *
+	     * @param string $connName Optional DBAL Connection name
+	     *
+	     * @return Doctrine\DBAL\Connection DBAL Connection
+	     */
+	    public function getConnection($connName = null);
+
+	    /**
+	     * Retrieve ORM EntityManager based on its name. If no argument provided,
+	     * it will attempt to get the default EntityManager.
+	     * If ORM EntityManager could not be retrieved, NameNotFoundException is thrown.
+	     *
+	     * @throws Bisna\Application\Exception\NameNotFoundException
+	     *
+	     * @param string $emName Optional ORM EntityManager name
+	     *
+	     * @return Doctrine\ORM\EntityManager ORM EntityManager
+	     */
+	    public function getEntityManager($emName = null);
+	}
