@@ -528,6 +528,13 @@ class DoctrineContainer
             $configuration->addCustomStringFunction($name, $className);
         }
 
+        // DQL Types configuration
+        $dqlTypes = $config['DQLTypes'];
+
+        foreach ($dqlTypes as $name => $className) {
+            \Doctrine\DBAL\Types\Type::addType($name, $className);
+        }
+
         return $configuration;
     }
 
