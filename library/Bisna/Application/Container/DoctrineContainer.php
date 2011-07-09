@@ -528,7 +528,6 @@ class DoctrineContainer
             $configuration->addCustomStringFunction($name, $className);
         }
 
-        // DQL Types configuration
         $dqlTypes = $config['DQLTypes'];
 
         foreach ($dqlTypes as $name => $className) {
@@ -555,6 +554,7 @@ class DoctrineContainer
             'mappingNamespace'           => '',
             'mappingDirs'                => array(),
             'annotationReaderClass'      => 'Doctrine\Common\Annotations\AnnotationReader',
+            'annotationReaderClassFile'  => APPLICATION_PATH . '/../library/Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php',
             'annotationReaderCache'      => $this->defaultCacheInstance,
             'annotationReaderNamespaces' => array()
         );
@@ -569,9 +569,17 @@ class DoctrineContainer
                 $reflClass->getName() == 'Doctrine\ORM\Mapping\Driver\AnnotationDriver' ||
                 $reflClass->isSubclassOf('Doctrine\ORM\Mapping\Driver\AnnotationDriver')
             ) {
+                \Doctrine\Common\Annotations\AnnotationRegistry::registerFile($driver['annotationReaderClassFile']);
                 $annotationReaderClass = $driver['annotationReaderClass'];
                 $annotationReader = new $annotationReaderClass($this->getCacheInstance($driver['annotationReaderCache']));
                 $annotationReader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
+                $annotationReader->setIgnoreNotImportedAnnotations(true);
+                $annotationReader->setEnableParsePhpImports(false);
+                $annotationReader = new \Doctrine\Common\Annotations\CachedReader(
+                    new \Doctrine\Common\Annotations\IndexedReader($annotationReader), $this->getCacheInstance($driver['annotationReaderCache'])
+                );
+
+
 
                 foreach ($driver['annotationReaderNamespaces'] as $alias => $namespace) {
                     $annotationReader->setAnnotationNamespaceAlias($namespace, $alias);
