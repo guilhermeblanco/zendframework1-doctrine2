@@ -18,8 +18,7 @@
  * <http://www.doctrine-project.org>.
  */
 
-// Zend Framework cannot deal with Resources using namespaces
-//namespace Bisna\Application\Resource;
+namespace Bisna\Application\Resource;
 
 use Bisna\Application\Container;
 
@@ -31,7 +30,7 @@ use Bisna\Application\Container;
  *
  * @author Guilherme Blanco <guilhermeblanco@hotmail.com>
  */
-class Bisna_Application_Resource_Doctrine extends \Zend_Application_Resource_ResourceAbstract
+class Doctrine extends \Zend_Application_Resource_ResourceAbstract
 {
     /**
      * Initializes Doctrine Context.
