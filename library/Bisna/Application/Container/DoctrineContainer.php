@@ -551,6 +551,7 @@ class DoctrineContainer
             'annotationReaderCache'      => $this->defaultCacheInstance,
             'annotationReaderNamespaces' => array()
         );
+        \Doctrine\Common\Annotations\AnnotationRegistry::registerFile(APPLICATION_PATH .'/../library/Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php');
 
         foreach ($config as $driver) {
             $driver = array_replace_recursive($defaultMetadataDriver, $driver);
@@ -565,16 +566,21 @@ class DoctrineContainer
                 $annotationReaderClass = $driver['annotationReaderClass'];
                 $annotationReader = new $annotationReaderClass($this->getCacheInstance($driver['annotationReaderCache']));
                 $annotationReader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
+                $annotationReader->setIgnoreNotImportedAnnotations(true);
+                $annotationReader->setEnableParsePhpImports(false);
 
                 foreach ($driver['annotationReaderNamespaces'] as $alias => $namespace) {
                     $annotationReader->setAnnotationNamespaceAlias($namespace, $alias);
                 }
+                $annotationReader = new \Doctrine\Common\Annotations\CachedReader(
+                    new \Doctrine\Common\Annotations\IndexedReader($annotationReader), $this->getCacheInstance($driver['annotationReaderCache'])
+                );
 
                 $nestedDriver = $reflClass->newInstance($annotationReader, $driver['mappingDirs']);
             } else {
                 $nestedDriver = $reflClass->newInstance($driver['mappingDirs']);
             }
-            
+
             $metadataDriver->addDriver($nestedDriver, $driver['mappingNamespace']);
         }
 
