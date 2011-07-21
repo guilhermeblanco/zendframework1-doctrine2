@@ -1,7 +1,6 @@
 <?php
 
-// Zend Framework cannot deal with Resources using namespaces
-//namespace Bisna\Application\Resource;
+namespace Bisna\Application\Resource;
 
 use Bisna\Doctrine\Container as DoctrineContainer;
 
@@ -10,7 +9,7 @@ use Bisna\Doctrine\Container as DoctrineContainer;
  *
  * @author Guilherme Blanco <guilhermeblanco@hotmail.com>
  */
-class Bisna_Application_Resource_Doctrine extends \Zend_Application_Resource_ResourceAbstract
+class Doctrine extends \Zend_Application_Resource_ResourceAbstract
 {
     /**
      * Initializes Doctrine Context.
