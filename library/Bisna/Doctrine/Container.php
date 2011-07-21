@@ -390,7 +390,7 @@ class Container
         //DBAL Types configuration
         $types = $config['types'];
 
-        foreach ($dqlTypes as $name => $className) {
+        foreach ($types as $name => $className) {
             Type::addType($name, $className);
         }
 
