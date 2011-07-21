@@ -1,14 +1,46 @@
 # Zend Framework 1.X + Doctrine 2.X integration
 
-ZF1D2 is an integration tool to allow you use Doctrine 2 at the top of Zend Framework 1.
+ZF1-D2 is an integration tool to allow you use Doctrine 2 at the top of Zend Framework 1.
 
 ## Configuring
 
-Doctrine 2 requires 2 different parts of configuration.
+Doctrine 2 requires different parts of configuration.
 
 - Cache
 - DBAL
 - ORM
+
+### Configuring Namespaces
+
+Since parts of Doctrine rely on specific commit pointers of individual Doctrine packages, a class loader is required to allow a customized configuration of Namespaces.
+One good example is default Doctrine GIT clone, which points to Doctrine\Common and Doctrine\DBAL packages through git submodules.
+To address this different paths issue, Bisna provides an specific class laoder configuration, which allows you to correclty map your environment.
+Here is an example of configuration:
+
+    ; Doctrine Common ClassLoader class and file
+    resources.doctrine.classLoader.loaderClass = "Doctrine\Common\ClassLoader"
+    resources.doctrine.classLoader.loaderFile  = APPLICATION_PATH "/../library/vendor/Doctrine/lib/vendor/doctrine-common/lib/Doctrine/Common/ClassLoader.php"
+
+    ; Namespace loader for Doctrine\Common
+    resources.doctrine.classLoader.loaders.doctrine_common.namespace   = "Doctrine\Common"
+    resources.doctrine.classLoader.loaders.doctrine_common.includePath = APPLICATION_PATH "/../library/vendor/Doctrine/lib/vendor/doctrine-common/lib"
+
+    ; Namespace loader for Doctrine\DBAL
+    resources.doctrine.classLoader.loaders.doctrine_dbal.namespace   = "Doctrine\DBAL"
+    resources.doctrine.classLoader.loaders.doctrine_dbal.includePath = APPLICATION_PATH "/../library/vendor/Doctrine/lib/vendor/doctrine-dbal/lib"
+
+    ; Namespace loader for Doctrine\ORM
+    resources.doctrine.classLoader.loaders.doctrine_orm.namespace   = "Doctrine\ORM"
+    resources.doctrine.classLoader.loaders.doctrine_orm.includePath = APPLICATION_PATH "/../library/vendor/Doctrine/lib"
+
+    ; Namespace loader for Symfony\Component\Console
+    resources.doctrine.classLoader.loaders.symfony_console.namespace   = "Symfony\Component\Console"
+    resources.doctrine.classLoader.loaders.symfony_console.includePath = APPLICATION_PATH "/../library/vendor/Doctrine/lib/vendor"
+
+    ; Namespace loader for Symfony\Component\Yaml
+    resources.doctrine.classLoader.loaders.symfony_yaml.namespace   = "Symfony\Component\Yaml"
+    resources.doctrine.classLoader.loaders.symfony_yaml.includePath = APPLICATION_PATH "/../library/vendor/Doctrine/lib/vendor"
+
 
 ### Configuring Cache
 
