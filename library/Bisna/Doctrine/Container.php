@@ -57,7 +57,9 @@ class Container
     public function __construct(array $config = array())
     {
         // Registering Class Loaders
-        $this->registerClassLoaders($config['classLoader']);
+        if (isset($config['classLoader'])) {
+            $this->registerClassLoaders($config['classLoader']);
+        }
         
         // Defining DBAL configuration
         $dbalConfig = $this->prepareDBALConfiguration($config);
