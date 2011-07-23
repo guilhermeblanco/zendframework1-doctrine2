@@ -25,10 +25,7 @@ $application = new Zend_Application(
 
 // Bootstrapping resources
 $bootstrap = $application->bootstrap()->getBootstrap();
-/* This seems to cause an exception. It seems to work when commented out.
-$bootstrap->bootstrap('Config')
-          ->bootstrap('Doctrine');
-*/
+
 // Retrieve Doctrine Container resource
 $container = $application->getBootstrap()->getResource('doctrine');
 
