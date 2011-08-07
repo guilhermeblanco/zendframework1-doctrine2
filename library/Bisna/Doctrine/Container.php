@@ -485,7 +485,12 @@ class Container
      */
     private function startORMEntityManager(array $config = array())
     {
-        return \Doctrine\ORM\EntityManager::create(
+        if (isset($config['entityManagerClass'])) {
+            $entityManagerClass = $config['entityManagerClass'];
+        } else {
+            $entityManagerClass = '\Doctrine\ORM\EntityManager';
+        }
+        return $entityManagerClass::create(
             $this->getConnection($config['connection']),
             $this->startORMConfiguration($config)
         );
