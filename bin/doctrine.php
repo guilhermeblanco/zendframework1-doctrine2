@@ -25,11 +25,9 @@ $application = new Zend_Application(
 
 // Bootstrapping resources
 $bootstrap = $application->bootstrap()->getBootstrap();
-$bootstrap->bootstrap('Config')
-          ->bootstrap('Doctrine');
 
 // Retrieve Doctrine Container resource
-$container = $application->getBootstrap()->getResource('doctrine');
+$container = $bootstrap->getResource('doctrine');
 
 // Console
 $cli = new \Symfony\Component\Console\Application(
