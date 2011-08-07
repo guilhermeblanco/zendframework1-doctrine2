@@ -1,9 +1,16 @@
+/*
 pre {
 font-weight: bold;
 font-family: "DejaVu Sans Mono", monospaced;
 font-size: .9em;
 }
+*/
+div.highlight pre {
+font-family: "DejaVu Sans Mono", monospaced;
+background-color: #000;
+}
 
+html_static_path = ['_static' '_extra']
 tt {
 font-weight: bold;
 font-family: "DejaVu Sans Mono", monospaced;
