@@ -17,12 +17,6 @@ As the sample Bisna ``application.ini`` shows, you will first need to add these 
 
 .. code-block:: ini
 
-    ; --------------------------
-    ; PHP Specific Configuration
-    ; --------------------------
-    includePaths.resource = APPLICATION "/../library/Bisna/Application/Resource"
-    ; snip...
-    ;
     ; ----------------------------------------
     ; Zend Framework Application Configuration
     ; ----------------------------------------
@@ -32,6 +26,10 @@ As the sample Bisna ``application.ini`` shows, you will first need to add these 
     autoloaderNamespaces[] = Bisna
 
 These lines were directly excerpted from the ``applicationi.ini`` in the `Bisna package <https://github.com/guilhermeblanco/ZendFramework1-Doctrine2>`_.
+
+.. important:: 
+  
+   You will, of course, have to configure autoloading for your entites by, for example, adding ``autoloaderNamespaces[] = MyProject`` to application.ini.
 
 Configuring Doctrine 2 
 ----------------------
