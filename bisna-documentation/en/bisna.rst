@@ -161,7 +161,6 @@ All cache instances must have a name; here, for example, the **Memcache** driver
 
 	; Cache Instance configuration for "default" cache
 	resources.doctrine.cache.instances.default.adapterClass = "Doctrine\Common\Cache\MemcacheCache"
-	resources.doctrine.cache.instances.default.namespace    = "MyApplication_"
 
 	; Server configuration (index "0")
 	resources.doctrine.cache.instances.default.options.servers.0.host = localhost
