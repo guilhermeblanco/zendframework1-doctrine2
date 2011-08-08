@@ -27,7 +27,7 @@ $application = new Zend_Application(
 $bootstrap = $application->bootstrap()->getBootstrap();
 
 // Retrieve Doctrine Container resource
-$container = $application->getBootstrap()->getResource('doctrine');
+$container = $bootstrap->getResource('doctrine');
 
 // Console
 $cli = new \Symfony\Component\Console\Application(
@@ -72,6 +72,7 @@ $cli->addCommands(array(
     new \Doctrine\ORM\Tools\Console\Command\GenerateProxiesCommand(),
     new \Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand(),
     new \Doctrine\ORM\Tools\Console\Command\RunDqlCommand(),
+    new \Doctrine\ORM\Tools\Console\Command\ValidateSchemaCommand(),
 
 ));
 
