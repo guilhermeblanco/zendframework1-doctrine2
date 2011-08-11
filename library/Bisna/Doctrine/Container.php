@@ -356,6 +356,16 @@ class Container
     }
 
     /**
+     * Retrieves a list of names for all Entity Managers configured
+     * 
+     * @return array
+     */
+    public function getEntityManagerNames()
+    {
+       return array_keys($this->configuration['orm']); 
+    }
+    
+    /**
      * Initialize the DBAL Connection.
      *
      * @param array $config DBAL Connection configuration.
