@@ -427,7 +427,9 @@ class Container
 
         // Event Subscribers configuration
         foreach ($config['eventSubscribers'] as $subscriber) {
-            $eventManager->addEventSubscriber(new $subscriber());
+       	    if ($subscriber) {
+       	        $eventManager->addEventSubscriber(new $subscriber());	
+       	    }
         }
 
         return $eventManager;
