@@ -587,7 +587,9 @@ class Container
 
         
         // Setup AnnotationRegistry
-        $this->startAnnotationRegistry($config['annotationRegistry']);
+        if (isset($config['annotationRegistry'])) {
+            $this->startAnnotationRegistry($config['annotationRegistry']);
+        }
         
         foreach ($config['drivers'] as $driver) {
             $driver = array_replace_recursive($defaultMetadataDriver, $driver);
