@@ -603,13 +603,18 @@ class Container
             ) {
                 $annotationReaderClass = $driver['annotationReaderClass'];
                 $annotationReader = new $annotationReaderClass();
-                $annotationReader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
-
-                foreach ($driver['annotationReaderNamespaces'] as $alias => $namespace) {
-                    $annotationReader->setAnnotationNamespaceAlias($namespace, $alias);
+                
+                if (method_exists($annotationReader, 'setDefaultAnnotationNamespace')) {
+                    $annotationReader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
                 }
 
-                //$annotationReader->setIgnoreNotImportedAnnotations(false);
+                if (method_exists($annotationReader, 'setAnnotationNamespaceAlias')) {
+                    $driver['annotationReaderNamespaces']['ORM'] = 'Doctrine\ORM\Mapping\\';
+                    
+                    foreach ($driver['annotationReaderNamespaces'] as $alias => $namespace) {
+                        $annotationReader->setAnnotationNamespaceAlias($namespace, $alias);
+                    }
+                }
 				
                 $indexedReader = new \Doctrine\Common\Annotations\CachedReader(
                     new \Doctrine\Common\Annotations\IndexedReader($annotationReader), 
