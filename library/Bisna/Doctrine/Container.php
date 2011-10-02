@@ -294,6 +294,19 @@ class Container
 
         return $this->connections[$connName];
     }
+    
+    /**
+     * Retrieves a list of names for all Connections configured and/or loaded
+     * 
+     * @return array
+     */
+    public function getConnectionNames()
+    {
+       $configuredConnections = array_keys($this->configuration['dbal']);
+       $loadedConnections = array_keys($this->connections);
+        
+       return array_merge($configuredConnections, $loadedConnections);
+    }
 
     /**
      * Retrieve Cache Instance based on its name. If no argument is provided,
@@ -323,6 +336,19 @@ class Container
         }
 
         return $this->cacheInstances[$cacheName];
+    }
+
+    /**
+     * Retrieves a list of names for all cache instances configured
+     * 
+     * @return array
+     */
+    public function getCacheInstanceNames()
+    {
+       $configuredInstances = array_keys($this->configuration['cache']);
+       $loadedInstances = array_keys($this->cacheInstances);
+        
+       return array_merge($configuredInstances, $loadedInstances);
     }
 
     /**
@@ -356,8 +382,7 @@ class Container
     }
 
     /**
-     * Retrieves a list of names for all Entity Managers configured 
-     * and/or loaded
+     * Retrieves a list of names for all Entity Managers configured and/or loaded
      * 
      * @return array
      */
