@@ -4,7 +4,8 @@ namespace Bisna\Doctrine;
 
 use Bisna\Exception,
     Doctrine\DBAL\Types\Type,
-    Doctrine\Common\Annotations\AnnotationRegistry;
+    Doctrine\Common\Annotations\AnnotationRegistry,
+    Doctrine\ORM\Events;
 
 /**
  * Doctrine Container class.
@@ -241,6 +242,18 @@ class Container
                 'numeric'             => array(),
                 'datetime'            => array(),
                 'string'              => array()
+            ),
+            'eventListeners'          => array(
+                'preRemove'           => array(),
+                'postRemove'          => array(),
+                'prePersist'          => array(),
+                'postPersist'         => array(),
+                'preUpdate'           => array(),
+                'postUpdate'          => array(),
+                'postLoad'            => array(),
+                'loadClassMetadata'   => array(),
+                'onFlush'             => array(),
+                'onClear'             => array()
             )
         );
 
@@ -531,10 +544,15 @@ class Container
         } else {
             $entityManagerClass = '\Doctrine\ORM\EntityManager';
         }
-        return $entityManagerClass::create(
+
+        $entityManager = $entityManagerClass::create(
             $this->getConnection($config['connection']),
             $this->startORMConfiguration($config)
         );
+
+        $this->addORMEventListeners($entityManager->getEventManager(), $config);
+
+        return $entityManager;
     }
 
     /**
@@ -587,6 +605,37 @@ class Container
         }
 
         return $configuration;
+    }
+
+    /**
+     * Add event listeners to the given EventManager.
+     *
+     * @param array $config ORM configuration.
+     *
+     * @return Doctrine\Common\EventManager
+     */
+    private function addORMEventListeners($eventManager, array $config = array())
+    {
+        $listeners = $config['eventListeners'];
+        $this->addEventManagerListeners($eventManager, Events::preRemove, $listeners['preRemove']);
+        $this->addEventManagerListeners($eventManager, Events::postRemove, $listeners['postRemove']);
+        $this->addEventManagerListeners($eventManager, Events::prePersist, $listeners['prePersist']);
+        $this->addEventManagerListeners($eventManager, Events::postPersist, $listeners['postPersist']);
+        $this->addEventManagerListeners($eventManager, Events::preUpdate, $listeners['preUpdate']);
+        $this->addEventManagerListeners($eventManager, Events::postUpdate, $listeners['postUpdate']);
+        $this->addEventManagerListeners($eventManager, Events::postLoad, $listeners['postLoad']);
+        $this->addEventManagerListeners($eventManager, Events::loadClassMetadata, $listeners['loadClassMetadata']);
+        $this->addEventManagerListeners($eventManager, Events::onFlush, $listeners['onFlush']);
+        $this->addEventManagerListeners($eventManager, Events::onClear, $listeners['onClear']);
+    }
+
+    private function addEventManagerListeners($eventManager, $event, array $listeners = array())
+    {
+        foreach ($listeners as $className) {
+            if ($className) {
+                $eventManager->addEventListener(array($event), new $className());
+            }
+        }
     }
 
     /**
