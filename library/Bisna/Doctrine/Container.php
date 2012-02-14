@@ -629,6 +629,11 @@ class Container
                 $annotationReaderClass = $driver['annotationReaderClass'];
                 $annotationReader = new $annotationReaderClass();
                 
+                // For Doctrine >= 2.2
+                if (method_exists($annotationReader, 'addNamespace')) {
+                    $annotationReader->addNamespace('Doctrine\ORM\Mapping');
+                }
+
                 if (method_exists($annotationReader, 'setDefaultAnnotationNamespace')) {
                     $annotationReader->setDefaultAnnotationNamespace('Doctrine\ORM\Mapping\\');
                 }
