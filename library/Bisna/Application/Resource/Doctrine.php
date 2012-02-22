@@ -12,6 +12,11 @@ use Bisna\Doctrine\Container as DoctrineContainer;
 class Doctrine extends \Zend_Application_Resource_ResourceAbstract
 {
     /**
+     * @var Bisna\Doctrine\Container
+	 */
+	protected $_container;
+    
+    /**
      * Initializes Doctrine Context.
      *
      * @return Bisna\Doctrine\Container
@@ -28,4 +33,12 @@ class Doctrine extends \Zend_Application_Resource_ResourceAbstract
 
         return $container;
     }
+    
+    /**
+     * Get Doctrine Container
+	 * @return Bisna\Doctrine\Container
+	 */
+	public function getContainer(){
+		return $this->_container;
+	}
 }
