@@ -48,6 +48,10 @@ class Container
      */
     private $entityManagers = array();
 
+    /**
+     * @var array ORM EntityManagers loading order.
+     */
+    private $entityManagersLoadingOrder = array();
     
     /**
      * Constructor.
@@ -85,6 +89,9 @@ class Container
 
             // Defining default ORM EntityManager
             $this->defaultEntityManager = $ormConfig['defaultEntityManager'];
+
+            // Defining ORM EntityManagers loading order
+            $this->entityManagersLoadingOrder = $ormConfig['entityManagersLoadingOrder'];
         }
 
         // Defining Doctrine Context configuration
@@ -259,9 +266,15 @@ class Container
             );
         }
 
+        $entityManagersLoadingOrder = array ();
+        if (isset($ormConfig['entityManagersLoadingOrder'])) {
+            $entityManagersLoadingOrder = $ormConfig['entityManagersLoadingOrder'];
+        }
+
         return array(
-            'defaultEntityManager' => $defaultEntityManagerName,
-            'entityManagers'       => $entityManagers
+            'defaultEntityManager'       => $defaultEntityManagerName,
+            'entityManagers'             => $entityManagers,
+            'entityManagersLoadingOrder' => $entityManagersLoadingOrder
         );
     }
 
@@ -388,10 +401,26 @@ class Container
      */
     public function getEntityManagerNames()
     {
-       $configuredEMs = array_keys($this->configuration['orm']);
-       $loadedEMs = array_keys($this->entityManagers);
-        
-       return array_merge($configuredEMs, $loadedEMs);
+        $configuredEMs = array_keys($this->configuration['orm']);
+        $loadedEMs = array_keys($this->entityManagers);
+
+        $orderedEMs = $this->orderEntityManagerNames(array_merge($configuredEMs, $loadedEMs));
+        return $orderedEMs;
+    }
+
+    /**
+     * Orders a list of names, as assigned by configuration file.
+     *
+     * @param array $entityManagerNames
+     *
+     * @return array
+     */
+    private function orderEntityManagerNames($entityManagerNames)
+    {
+        $firstEntityManagers = $this->entityManagersLoadingOrder;
+        $lastEntityManagers = array_diff($entityManagerNames, $firstEntityManagers);
+
+        return array_merge($firstEntityManagers, $lastEntityManagers);
     }
     
     /**
