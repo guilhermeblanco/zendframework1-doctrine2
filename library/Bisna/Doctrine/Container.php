@@ -108,6 +108,10 @@ class Container
         require_once $classLoaderFile;
         
         foreach ($config['loaders'] as $loaderItem) {
+            if (! isset($loaderItem['includePath'])) {
+                $loaderItem['includePath'] = null;
+            }
+
             $classLoader = new $classLoaderClass($loaderItem['namespace'], $loaderItem['includePath']);
             $classLoader->register();
         }
