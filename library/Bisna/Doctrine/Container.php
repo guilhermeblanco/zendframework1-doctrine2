@@ -19,7 +19,7 @@ class Container
     public $defaultConnection = 'default';
 
     /**
-     * @var default Default Cache Instance name.
+     * @var string Default Cache Instance name.
      */
     public $defaultCacheInstance = 'default';
 
@@ -98,7 +98,7 @@ class Container
     /**
      * Register Doctrine Class Loaders
      *
-     * @param array Doctrine Class Loader configuration
+     * @param array $config Doctrine Class Loader configuration
      */
     private function registerClassLoaders(array $config = array())
     {
@@ -274,11 +274,11 @@ class Container
      * it will attempt to get the default Connection.
      * If DBAL Connection name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Bisna\Application\Exception\NameNotFoundException
+     * @throws \Bisna\Exception\NameNotFoundException
      *
      * @param string $connName Optional DBAL Connection name
      *
-     * @return Doctrine\DBAL\Connection DBAL Connection
+     * @return \Doctrine\DBAL\Connection DBAL Connection
      */
     public function getConnection($connName = null)
     {
@@ -317,11 +317,11 @@ class Container
      * it will attempt to get the default Instance.
      * If Cache Instance name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Bisna\Application\Exception\NameNotFoundException
+     * @throws \Bisna\Exception\NameNotFoundException
      *
      * @param string $cacheName Optional Cache Instance name
      *
-     * @return Doctrine\Common\Cache\Cache Cache Instance
+     * @return \Doctrine\Common\Cache\Cache Cache Instance
      */
     public function getCacheInstance($cacheName = null)
     {
@@ -360,11 +360,11 @@ class Container
      * it will attempt to get the default EntityManager.
      * If ORM EntityManager name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Bisna\Application\Exception\NameNotFoundException
+     * @throws \Bisna\Exception\NameNotFoundException
      *
      * @param string $emName Optional ORM EntityManager name
      *
-     * @return Doctrine\ORM\EntityManager ORM EntityManager
+     * @return \Doctrine\ORM\EntityManager ORM EntityManager
      */
     public function getEntityManager($emName = null)
     {
@@ -403,7 +403,7 @@ class Container
      *
      * @param array $config DBAL Connection configuration.
      *
-     * @return Doctrine\DBAL\Connection
+     * @return \Doctrine\DBAL\Connection
      */
     private function startDBALConnection(array $config = array())
     {
@@ -419,7 +419,7 @@ class Container
      *
      * @param array $config DBAL Connection configuration.
      *
-     * @return Doctrine\DBAL\Configuration
+     * @return \Doctrine\DBAL\Configuration
      */
     private function startDBALConfiguration(array $config = array())
     {
@@ -447,7 +447,7 @@ class Container
      *
      * @param array $config DBAL Connection configuration.
      *
-     * @return Doctrine\Common\EventManager
+     * @return \Doctrine\Common\EventManager
      */
     private function startDBALEventManager(array $config = array())
     {
@@ -469,7 +469,7 @@ class Container
      *
      * @param array $config Cache Instance configuration.
      *
-     * @return Doctrine\Common\Cache\Cache
+     * @return \Doctrine\Common\Cache\Cache
      */
     private function startCacheInstance(array $config = array())
     {
@@ -526,7 +526,7 @@ class Container
      *
      * @param array $config ORM EntityManager configuration.
      *
-     * @return Doctrine\ORM\EntityManager
+     * @return \Doctrine\ORM\EntityManager
      */
     private function startORMEntityManager(array $config = array())
     {
@@ -546,7 +546,7 @@ class Container
      *
      * @param array $config ORM EntityManager configuration.
      *
-     * @return Doctrine\ORM\Configuration
+     * @return \Doctrine\ORM\Configuration
      */
     private function startORMConfiguration(array $config = array())
     {
@@ -603,7 +603,7 @@ class Container
      *
      * @param array $config ORM Mapping drivers.
      *
-     * @return Doctrine\ORM\Mapping\Driver\DriverChain
+     * @return \Doctrine\ORM\Mapping\Driver\DriverChain
      */
     private function startORMMetadata(array $config = array())
     {
