@@ -407,11 +407,20 @@ class Container
      */
     private function startDBALConnection(array $config = array())
     {
-        return \Doctrine\DBAL\DriverManager::getConnection(
+        $connection = \Doctrine\DBAL\DriverManager::getConnection(
             $config['parameters'],
             $this->startDBALConfiguration($config),
             $this->startDBALEventManager($config)
         );
+
+        // Type mappings
+        if (isset($config['typeMapping'])) {
+            foreach ($config['typeMapping'] as $dbType => $doctrineType) {
+                $connection->getDatabasePlatform()->registerDoctrineTypeMapping($dbType, $doctrineType);
+            }
+        }
+
+        return $connection;
     }
 
     /**
@@ -456,9 +465,9 @@ class Container
 
         // Event Subscribers configuration
         foreach ($config['eventSubscribers'] as $subscriber) {
-       	    if ($subscriber) {
-       	        $eventManager->addEventSubscriber(new $subscriber());	
-       	    }
+            if ($subscriber) {
+                $eventManager->addEventSubscriber(new $subscriber());   
+            }
         }
 
         return $eventManager;
@@ -516,6 +525,78 @@ class Container
             }
 
             $adapter->setMemcache($memcache);
+        } else if ($adapter instanceof \Doctrine\Common\Cache\MemcachedCache) {
+            // Prevent stupid PHP error of missing extension (if other driver is being used)
+            $memcacheClassName = 'Memcached';
+            $memcache = new $memcacheClassName();
+
+            // Default server configuration
+            $defaultServer = array(
+                'host'          => 'localhost',
+                'port'          => 11211,
+                'weight'        => 1,
+            );
+
+            if (isset($config['options']['servers'])) {
+                foreach ($config['options']['servers'] as $server) {
+                    $server = array_replace_recursive($defaultServer, $server);
+
+                    $memcache->addServer(
+                        $server['host'],
+                        $server['port'],
+                        $server['weight']
+                    );
+                }
+            }
+
+            $adapter->setMemcached($memcache);
+        } else if ($adapter instanceof \Doctrine\Common\Cache\RedisCache) {
+            // Prevent stupid PHP error of missing extension (if other driver is being used)
+            $redisClassName = 'Redis';
+            $redis = new $redisClassName();
+
+            // Default server configuration
+            $defaultServer = array(
+                'host'         => 'localhost',
+                'port'         => 6379,
+                'timeout'      => 0,
+                'persistent'   => false,
+                'persistentId' => null,
+                'prefix'       => null,
+                'password'     => null,
+                'database'     => 0,
+            );
+
+            $server = isset($config['options'])
+                ? array_replace_recursive($defaultServer, $config['options'])
+                : $defaultServer;
+
+            if (isset($server['persistent']) && $server['persistent']) {
+                $redis->pconnect(
+                    $server['host'],
+                    $server['port'],
+                    $server['timeout'],
+                    isset($server['persistentId']) ? $server['persistentId'] : null
+                );
+            } else {
+                $redis->connect(
+                    $server['host'],
+                    $server['port'],
+                    $server['timeout']
+                );
+            }
+
+            if (isset($server['password'])) {
+                $redis->auth($server['password']);
+            }
+
+            if (isset($server['prefix'])) {
+                $redis->setOption(\Redis::OPT_PREFIX, $server['prefix']);
+            }
+
+            $redis->select($server['database']);
+
+            $adapter->setRedis($redis);
         }
 
         return $adapter;
@@ -654,7 +735,7 @@ class Container
                         $annotationReader->setAnnotationNamespaceAlias($namespace, $alias);
                     }
                 }
-				
+                
                 $indexedReader = new \Doctrine\Common\Annotations\CachedReader(
                     new \Doctrine\Common\Annotations\IndexedReader($annotationReader), 
                     $this->getCacheInstance($driver['annotationReaderCache'])
