@@ -414,13 +414,13 @@ class Container
         );
 
         // Type mappings
-		if (isset($config['typeMapping'])) {
-			foreach ($config['typeMapping'] as $dbType => $doctrineType) {
-				$connection->getDatabasePlatform()->registerDoctrineTypeMapping($dbType, $doctrineType);
-			}
-		}
+        if (isset($config['typeMapping'])) {
+            foreach ($config['typeMapping'] as $dbType => $doctrineType) {
+                $connection->getDatabasePlatform()->registerDoctrineTypeMapping($dbType, $doctrineType);
+            }
+        }
 
-		return $connection;
+        return $connection;
     }
 
     /**
@@ -465,9 +465,9 @@ class Container
 
         // Event Subscribers configuration
         foreach ($config['eventSubscribers'] as $subscriber) {
-       	    if ($subscriber) {
-       	        $eventManager->addEventSubscriber(new $subscriber());	
-       	    }
+            if ($subscriber) {
+                $eventManager->addEventSubscriber(new $subscriber());   
+            }
         }
 
         return $eventManager;
@@ -567,27 +567,17 @@ class Container
                 'database'     => 0,
             );
 
-            if (isset($config['options'])) {
-                $server = array_replace_recursive($defaultServer, $config['options']);
-            } else {
-                $server = $defaultServer;
-            }
+            $server = isset($config['options'])
+                ? array_replace_recursive($defaultServer, $config['options'])
+                : $defaultServer;
 
-            if ($server['persistent']) {
-                if ($server['persistentId']) {
-                    $redis->pconnect(
-                        $server['host'],
-                        $server['port'],
-                        $server['timeout'],
-                        $server['persistentId']
-                    );
-                } else {
-                    $redis->pconnect(
-                        $server['host'],
-                        $server['port'],
-                        $server['timeout']
-                    );
-                }
+            if (isset($server['persistent']) && $server['persistent']) {
+                $redis->pconnect(
+                    $server['host'],
+                    $server['port'],
+                    $server['timeout'],
+                    isset($server['persistentId']) ? $server['persistentId'] : null
+                );
             } else {
                 $redis->connect(
                     $server['host'],
@@ -596,11 +586,11 @@ class Container
                 );
             }
 
-            if ($server['password']) {
+            if (isset($server['password'])) {
                 $redis->auth($server['password']);
             }
 
-            if ($server['prefix']) {
+            if (isset($server['prefix'])) {
                 $redis->setOption(\Redis::OPT_PREFIX, $server['prefix']);
             }
 
@@ -745,7 +735,7 @@ class Container
                         $annotationReader->setAnnotationNamespaceAlias($namespace, $alias);
                     }
                 }
-				
+                
                 $indexedReader = new \Doctrine\Common\Annotations\CachedReader(
                     new \Doctrine\Common\Annotations\IndexedReader($annotationReader), 
                     $this->getCacheInstance($driver['annotationReaderCache'])
