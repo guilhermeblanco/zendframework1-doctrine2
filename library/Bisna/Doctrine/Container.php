@@ -552,7 +552,7 @@ class Container
             $adapter->setMemcached($memcache);
         } else if ($adapter instanceof \Doctrine\Common\Cache\RedisCache) {
             // Prevent stupid PHP error of missing extension (if other driver is being used)
-            $redisClassName = '\\Redis';
+            $redisClassName = 'Redis';
             $redis = new $redisClassName();
 
             // Default server configuration
