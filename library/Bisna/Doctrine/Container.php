@@ -407,11 +407,20 @@ class Container
      */
     private function startDBALConnection(array $config = array())
     {
-        return \Doctrine\DBAL\DriverManager::getConnection(
+        $connection = \Doctrine\DBAL\DriverManager::getConnection(
             $config['parameters'],
             $this->startDBALConfiguration($config),
             $this->startDBALEventManager($config)
         );
+
+        // Type mappings
+		if (isset($config['typeMapping'])) {
+			foreach ($config['typeMapping'] as $dbType => $doctrineType) {
+				$connection->getDatabasePlatform()->registerDoctrineTypeMapping($dbType, $doctrineType);
+			}
+		}
+
+		return $connection;
     }
 
     /**
