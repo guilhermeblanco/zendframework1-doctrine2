@@ -550,6 +550,63 @@ class Container
             }
 
             $adapter->setMemcached($memcache);
+        } else if ($adapter instanceof \Doctrine\Common\Cache\RedisCache) {
+            // Prevent stupid PHP error of missing extension (if other driver is being used)
+            $redisClassName = '\\Redis';
+            $redis = new $redisClassName();
+
+            // Default server configuration
+            $defaultServer = array(
+                'host'         => 'localhost',
+                'port'         => 6379,
+                'timeout'      => 0,
+                'persistent'   => false,
+                'persistentId' => null,
+                'prefix'       => null,
+                'password'     => null,
+                'database'     => 0,
+            );
+
+            if (isset($config['options'])) {
+                $server = array_replace_recursive($defaultServer, $config['options']);
+            } else {
+                $server = $defaultServer;
+            }
+
+            if ($server['persistent']) {
+                if ($server['persistentId']) {
+                    $redis->pconnect(
+                        $server['host'],
+                        $server['port'],
+                        $server['timeout'],
+                        $server['persistentId']
+                    );
+                } else {
+                    $redis->pconnect(
+                        $server['host'],
+                        $server['port'],
+                        $server['timeout']
+                    );
+                }
+            } else {
+                $redis->connect(
+                    $server['host'],
+                    $server['port'],
+                    $server['timeout']
+                );
+            }
+
+            if ($server['password']) {
+                $redis->auth($server['password']);
+            }
+
+            if ($server['prefix']) {
+                $redis->setOption(\Redis::OPT_PREFIX, $server['prefix']);
+            }
+
+            $redis->select($server['database']);
+
+            $adapter->setRedis($redis);
         }
 
         return $adapter;
