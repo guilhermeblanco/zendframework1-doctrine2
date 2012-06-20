@@ -525,6 +525,31 @@ class Container
             }
 
             $adapter->setMemcache($memcache);
+        } else if ($adapter instanceof \Doctrine\Common\Cache\MemcachedCache) {
+            // Prevent stupid PHP error of missing extension (if other driver is being used)
+            $memcacheClassName = 'Memcached';
+            $memcache = new $memcacheClassName();
+
+            // Default server configuration
+            $defaultServer = array(
+                'host'          => 'localhost',
+                'port'          => 11211,
+                'weight'        => 1,
+            );
+
+            if (isset($config['options']['servers'])) {
+                foreach ($config['options']['servers'] as $server) {
+                    $server = array_replace_recursive($defaultServer, $server);
+
+                    $memcache->addServer(
+                        $server['host'],
+                        $server['port'],
+                        $server['weight']
+                    );
+                }
+            }
+
+            $adapter->setMemcached($memcache);
         }
 
         return $adapter;
