@@ -105,6 +105,10 @@ Doctrine DataBase Abstraction Layer follows the same idea of Cache drivers.
 
 TBD
 
+## Add Filters
+
+;resources.doctrine.orm.entityManagers.default.filterCollection.soft-deleteable = "\Gedmo\SoftDeleteable\Filter\SoftDeleteableFilter"
+
 ## Using
 
 ### Accessing Doctrine Container

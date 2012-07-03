@@ -3,8 +3,8 @@
 namespace Bisna\Doctrine;
 
 use Bisna\Exception,
-    Doctrine\DBAL\Types\Type,
-    Doctrine\Common\Annotations\AnnotationRegistry;
+Doctrine\DBAL\Types\Type,
+Doctrine\Common\Annotations\AnnotationRegistry;
 
 /**
  * Doctrine Container class.
@@ -14,7 +14,7 @@ use Bisna\Exception,
 class Container
 {
     /**
-     * @var string Default DBAL Connection name. 
+     * @var string Default DBAL Connection name.
      */
     public $defaultConnection = 'default';
 
@@ -48,7 +48,11 @@ class Container
      */
     private $entityManagers = array();
 
-    
+    /**
+     * @var array List of configured filters
+     */
+    private $filters = array();
+
     /**
      * Constructor.
      *
@@ -60,7 +64,7 @@ class Container
         if (isset($config['classLoader'])) {
             $this->registerClassLoaders($config['classLoader']);
         }
-        
+
         // Defining DBAL configuration
         $dbalConfig = $this->prepareDBALConfiguration($config);
 
@@ -104,9 +108,9 @@ class Container
     {
         $classLoaderClass = $config['loaderClass'];
         $classLoaderFile  = $config['loaderFile'];
-        
+
         require_once $classLoaderFile;
-        
+
         foreach ($config['loaders'] as $loaderItem) {
             if (! isset($loaderItem['includePath'])) {
                 $loaderItem['includePath'] = null;
@@ -184,7 +188,7 @@ class Container
             ? $cacheConfig['defaultCacheInstance'] : $this->defaultCacheInstance;
 
         unset($cacheConfig['defaultCacheInstance']);
-            
+
         $defaultCacheInstance = array(
             'adapterClass' => 'Doctrine\Common\Cache\ArrayCache',
             'namespace'    => '',
@@ -298,18 +302,18 @@ class Container
 
         return $this->connections[$connName];
     }
-    
+
     /**
      * Retrieves a list of names for all Connections configured and/or loaded
-     * 
+     *
      * @return array
      */
     public function getConnectionNames()
     {
-       $configuredConnections = array_keys($this->configuration['dbal']);
-       $loadedConnections = array_keys($this->connections);
-        
-       return array_merge($configuredConnections, $loadedConnections);
+        $configuredConnections = array_keys($this->configuration['dbal']);
+        $loadedConnections = array_keys($this->connections);
+
+        return array_merge($configuredConnections, $loadedConnections);
     }
 
     /**
@@ -344,15 +348,15 @@ class Container
 
     /**
      * Retrieves a list of names for all cache instances configured
-     * 
+     *
      * @return array
      */
     public function getCacheInstanceNames()
     {
-       $configuredInstances = array_keys($this->configuration['cache']);
-       $loadedInstances = array_keys($this->cacheInstances);
-        
-       return array_merge($configuredInstances, $loadedInstances);
+        $configuredInstances = array_keys($this->configuration['cache']);
+        $loadedInstances = array_keys($this->cacheInstances);
+
+        return array_merge($configuredInstances, $loadedInstances);
     }
 
     /**
@@ -381,23 +385,28 @@ class Container
 
             unset($this->configuration['orm'][$emName]);
         }
-        
+
+        //add configured filters
+        foreach($this->filters as $filter) {
+            $this->entityManagers[$emName]->getFilters()->enable($filter);
+        }
+
         return $this->entityManagers[$emName];
     }
 
     /**
      * Retrieves a list of names for all Entity Managers configured and/or loaded
-     * 
+     *
      * @return array
      */
     public function getEntityManagerNames()
     {
-       $configuredEMs = array_keys($this->configuration['orm']);
-       $loadedEMs = array_keys($this->entityManagers);
-        
-       return array_merge($configuredEMs, $loadedEMs);
+        $configuredEMs = array_keys($this->configuration['orm']);
+        $loadedEMs = array_keys($this->entityManagers);
+
+        return array_merge($configuredEMs, $loadedEMs);
     }
-    
+
     /**
      * Initialize the DBAL Connection.
      *
@@ -440,7 +449,7 @@ class Container
             $sqlLoggerClass = $config['sqlLoggerClass'];
             $configuration->setSQLLogger(new $sqlLoggerClass());
         }
-        
+
         //DBAL Types configuration
         $types = $config['types'];
 
@@ -466,7 +475,7 @@ class Container
         // Event Subscribers configuration
         foreach ($config['eventSubscribers'] as $subscriber) {
             if ($subscriber) {
-                $eventManager->addEventSubscriber(new $subscriber());   
+                $eventManager->addEventSubscriber(new $subscriber());
             }
         }
 
@@ -675,7 +684,16 @@ class Container
         if (isset($config['defaultRepositoryClass'])) {
             $configuration->setDefaultRepositoryClassName($config['defaultRepositoryClass']);
         }
-        
+
+        //enable configured filters
+        if(isset($config['filterCollection'])) {
+            foreach($config['filterCollection'] as $filter => $filterClass) {
+                //keep the filter names. We will have to enable them later
+                $this->filters[] = $filter;
+                $configuration->addFilter($filter, $filterClass);
+            }
+        }
+
         return $configuration;
     }
 
@@ -700,15 +718,15 @@ class Container
             'annotationReaderNamespaces' => array()
         );
 
-        
+
         // Setup AnnotationRegistry
         if (isset($config['annotationRegistry'])) {
             $this->startAnnotationRegistry($config['annotationRegistry']);
         }
-        
+
         foreach ($config['drivers'] as $driver) {
             $driver = array_replace_recursive($defaultMetadataDriver, $driver);
-            
+
             $reflClass = new \ReflectionClass($driver['adapterClass']);
             $nestedDriver = null;
 
@@ -718,7 +736,7 @@ class Container
             ) {
                 $annotationReaderClass = $driver['annotationReaderClass'];
                 $annotationReader = new $annotationReaderClass();
-                
+
                 // For Doctrine >= 2.2
                 if (method_exists($annotationReader, 'addNamespace')) {
                     $annotationReader->addNamespace('Doctrine\ORM\Mapping');
@@ -730,14 +748,14 @@ class Container
 
                 if (method_exists($annotationReader, 'setAnnotationNamespaceAlias')) {
                     $driver['annotationReaderNamespaces']['ORM'] = 'Doctrine\ORM\Mapping\\';
-                    
+
                     foreach ($driver['annotationReaderNamespaces'] as $alias => $namespace) {
                         $annotationReader->setAnnotationNamespaceAlias($namespace, $alias);
                     }
                 }
-                
+
                 $indexedReader = new \Doctrine\Common\Annotations\CachedReader(
-                    new \Doctrine\Common\Annotations\IndexedReader($annotationReader), 
+                    new \Doctrine\Common\Annotations\IndexedReader($annotationReader),
                     $this->getCacheInstance($driver['annotationReaderCache'])
                 );
 
@@ -745,7 +763,7 @@ class Container
             } else {
                 $nestedDriver = $reflClass->newInstance($driver['mappingDirs']);
             }
-            
+
             $metadataDriver->addDriver($nestedDriver, $driver['mappingNamespace']);
         }
 
@@ -753,13 +771,13 @@ class Container
             reset($drivers);
             $metadataDriver = $drivers[key($drivers)];
         }
-        
+
         return $metadataDriver;
     }
-    
+
     /**
      * Initialize ORM Metatada Annotation Registry driver
-     * 
+     *
      * @param array $config  ORM Annotation Registry configuration.
      */
     private function startAnnotationRegistry($config)
@@ -770,16 +788,16 @@ class Container
                 AnnotationRegistry::registerFile($file);
             }
         }
-        
+
         // Load annotation namespaces
         if (isset($config['annotationNamespaces']) && is_array($config['annotationNamespaces'])) {
             foreach($config['annotationNamespaces'] as $annotationNamespace) {
                 AnnotationRegistry::registerAutoloadNamespace(
-                        $annotationNamespace['namespace'], 
-                        $annotationNamespace['includePath']
+                    $annotationNamespace['namespace'],
+                    $annotationNamespace['includePath']
                 );
             }
-            
-        }        
+
+        }
     }
 }
