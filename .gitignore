@@ -8,3 +8,29 @@ vendor
 # ignore the composer lock file
 composer.lock
 
+
+.idea/misc.xml
+
+.idea/encodings.xml
+
+.idea/encodings.xml
+
+.idea/modules.xml
+
+.idea/modules.xml
+
+.idea/scopes/scope_settings.xml
+
+.idea/scopes/scope_settings.xml
+
+.idea/vcs.xml
+
+.idea/vcs.xml
+
+.idea/zendframework1-doctrine2.iml
+
+.idea/zendframework1-doctrine2.iml
+
+.idea/.name
+
+.idea/workspace.xml

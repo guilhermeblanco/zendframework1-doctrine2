@@ -60,6 +60,11 @@ class Container
 
 
     /**
+     * @var array List of configured filters
+     */
+    private $filters = array();
+
+    /**
      * Constructor.
      *
      * @param array $config Doctrine Container configuration
@@ -493,12 +498,17 @@ class Container
             unset($this->configuration['orm'][$emName]);
         }
 
+        //add configured filters
+        foreach($this->filters as $filter) {
+            $this->entityManagers[$emName]->getFilters()->enable($filter);
+        }
+
         return $this->entityManagers[$emName];
     }
 
     /**
      * Retrieves a list of names for all Entity Managers configured and/or loaded
-     *
+     * 
      * @return array
      */
     public function getEntityManagerNames()
@@ -855,6 +865,16 @@ class Container
         if (isset($config['defaultRepositoryClass'])) {
             $configuration->setDefaultRepositoryClassName($config['defaultRepositoryClass']);
         }
+
+        //enable configured filters
+        if(isset($config['filterCollection'])) {
+            foreach($config['filterCollection'] as $filter => $filterClass) {
+                //keep the filter names. We will have to enable them later
+                $this->filters[] = $filter;
+                $configuration->addFilter($filter, $filterClass);
+            }
+        }
+
 
         // Naming strategy for ORM
         $configuration->setNamingStrategy(new $config['namingStrategyClass']);
