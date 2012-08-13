@@ -4,8 +4,7 @@ namespace Bisna\Doctrine;
 
 use Bisna\Exception,
     Doctrine\DBAL\Types\Type,
-    Doctrine\Common\Annotations\AnnotationRegistry,
-    Doctrine\MongoDB\Connection as MongoDBConnection;
+    Doctrine\Common\Annotations\AnnotationRegistry;
 
 /**
  * Doctrine Container class.
@@ -98,7 +97,7 @@ class Container
             $this->defaultEntityManager = $ormConfig['defaultEntityManager'];
         }
         
-        //Defining ODM configuration
+        // Defining ODM configuration
         if (isset($config['odm'])) {
             $odmConfig  = $this->prepareODMConfiguration($config);
         
@@ -113,7 +112,7 @@ class Container
             'orm'   => $ormConfig['entityManagers']
         );
         
-        //In case a ODM configuration is available, add it to the main configuration
+        // In case a ODM configuration is available, add it to the main configuration
         if (isset($odmConfig['documentManagers'])) {
             $this->configuration['odm']	= $odmConfig['documentManagers'];
         }
@@ -247,29 +246,30 @@ class Container
     {
         $odmConfig = $config['odm'];
         $defaultDocumentManagerName = isset($odmConfig['defaultDocumentManager'])
-        ? $odmConfig['defaultDocumentManager'] : $this->defaultDocumentManager;
+                ? $odmConfig['defaultDocumentManager']
+                : $this->defaultDocumentManager;
     
         unset($odmConfig['defaultDocumentManager']);
     
         $defaultDocumentManager = array(
-                'documentManagerClass' => 'Doctrine\ODM\MongoDB\DocumentManager',
-                'configurationClass' => 'Doctrine\ODM\MongoDB\Configuration',
-                'documentNamespaces' => array(),
-                'connection' => $this->defaultConnection,
-                'proxy' => array(
-                        'autoGenerateClasses' => true,
-                        'namespace' => 'Proxy',
-                        'dir' => APPLICATION_PATH . '/../library/Proxy'
-                ),
-                'hydrator' => array(
-                        'namespace' => 'Hydrators',
-                        'dir' => APPLICATION_PATH . '/../cache'
-                ),
-                'queryCache' => $this->defaultCacheInstance,
-                'resultCache' => $this->defaultCacheInstance,
-                'metadataCache' => $this->defaultCacheInstance,
-                'metadataDrivers' => array(),
-                'connectionString' => ''
+            'documentManagerClass' => 'Doctrine\ODM\MongoDB\DocumentManager',
+            'configurationClass' => 'Doctrine\ODM\MongoDB\Configuration',
+            'documentNamespaces' => array(),
+            'connection' => $this->defaultConnection,
+            'proxy' => array(
+                    'autoGenerateClasses' => true,
+                    'namespace' => 'Proxy',
+                    'dir' => APPLICATION_PATH . '/../library/Proxy'
+            ),
+            'hydrator' => array(
+                    'namespace' => 'Hydrators',
+                    'dir' => APPLICATION_PATH . '/../cache'
+            ),
+            'queryCache' => $this->defaultCacheInstance,
+            'resultCache' => $this->defaultCacheInstance,
+            'metadataCache' => $this->defaultCacheInstance,
+            'metadataDrivers' => array(),
+            'connectionString' => ''
         );
     
         $documentManagers = array();
@@ -639,8 +639,8 @@ class Container
     private function startODMDocumentManager(array $config = array())
     {
         return \Doctrine\ODM\MongoDB\DocumentManager::create(
-                new MongoDBConnection($config['connectionString']),
-                $this->startODMConfiguration($config)
+            new \Doctrine\MongoDB\Connection($config['connectionString']),
+            $this->startODMConfiguration($config)
         );
     }
 
@@ -684,7 +684,7 @@ class Container
     
         // Proxy configuration
         $configuration->setAutoGenerateProxyClasses(
-                ! in_array($config['proxy']['autoGenerateClasses'], array("0", "false", false))
+            ! in_array($config['proxy']['autoGenerateClasses'], array("0", "false", false))
         );
         $configuration->setProxyNamespace($config['proxy']['namespace']);
         $configuration->setProxyDir($config['proxy']['dir']);
@@ -774,16 +774,16 @@ class Container
      */
     private function startODMMetadata(array $config = array())
     {
-        $metadataDriver = new \Doctrine\ODM\MongoDB\Mapping\Driver\DriverChain();
-    
+        $metadataDriver = new \Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain();
+        
         // Default metadata driver configuration
         $defaultMetadataDriver = array(
-                'adapterClass'               => 'Doctrine\ODM\MongoDb\Mapping\Driver\AnnotationDriver',
-                'mappingNamespace'           => '',
-                'mappingDirs'                => array(),
-                'annotationReaderClass'      => 'Doctrine\Common\Annotations\AnnotationReader',
-                'annotationReaderCache'      => $this->defaultCacheInstance,
-                'annotationReaderNamespaces' => array()
+            'adapterClass'               => 'Doctrine\ODM\MongoDb\Mapping\Driver\AnnotationDriver',
+            'mappingNamespace'           => '',
+            'mappingDirs'                => array(),
+            'annotationReaderClass'      => 'Doctrine\Common\Annotations\AnnotationReader',
+            'annotationReaderCache'      => $this->defaultCacheInstance,
+            'annotationReaderNamespaces' => array()
         );
     
         // Setup ODM AnnotationRegistry
@@ -798,8 +798,8 @@ class Container
             $nestedDriver = null;
     
             if (
-                    $reflClass->getName() == 'Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver' ||
-                    $reflClass->isSubclassOf('Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver')
+                $reflClass->getName() == 'Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver' ||
+                $reflClass->isSubclassOf('Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver')
             ) {
                 $annotationReaderClass = $driver['annotationReaderClass'];
                 $annotationReader = new $annotationReaderClass();
@@ -816,8 +816,8 @@ class Container
                 }
     
                 $indexedReader = new \Doctrine\Common\Annotations\CachedReader(
-                        new \Doctrine\Common\Annotations\IndexedReader($annotationReader),
-                        $this->getCacheInstance($driver['annotationReaderCache'])
+                    new \Doctrine\Common\Annotations\IndexedReader($annotationReader),
+                    $this->getCacheInstance($driver['annotationReaderCache'])
                 );
     
                 $nestedDriver = $reflClass->newInstance($indexedReader, $driver['mappingDirs']);
@@ -846,7 +846,7 @@ class Container
     private function startORMMetadata(array $config = array())
     {
         $metadataDriver = new \Doctrine\ORM\Mapping\Driver\DriverChain();
-
+        
         // Default metadata driver configuration
         $defaultMetadataDriver = array(
             'adapterClass'               => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
