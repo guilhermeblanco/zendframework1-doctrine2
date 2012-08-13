@@ -845,7 +845,7 @@ class Container
      */
     private function startORMMetadata(array $config = array())
     {
-        $metadataDriver = new \Doctrine\ORM\Mapping\Driver\DriverChain();
+        $metadataDriver = new \Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain();
         
         // Default metadata driver configuration
         $defaultMetadataDriver = array(
