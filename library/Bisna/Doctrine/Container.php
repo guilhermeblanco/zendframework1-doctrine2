@@ -24,6 +24,11 @@ class Container
     public $defaultCacheInstance = 'default';
 
     /**
+     * @var string Default ODM DocumentManager name.
+     */
+    public $defaultDocumentManager = 'default';
+    
+    /**
      * @var string Default ORM EntityManager name.
      */
     public $defaultEntityManager = 'default';
@@ -43,6 +48,11 @@ class Container
      */
     private $cacheInstances = array();
 
+    /**
+     * @var array Available ODM DocumentManagers.
+     */
+    private $documentManagers = array();
+    
     /**
      * @var array Available ORM EntityManagers.
      */
@@ -86,6 +96,14 @@ class Container
             // Defining default ORM EntityManager
             $this->defaultEntityManager = $ormConfig['defaultEntityManager'];
         }
+        
+        // Defining ODM configuration
+        if (isset($config['odm'])) {
+            $odmConfig  = $this->prepareODMConfiguration($config);
+        
+            // Defining default ORM EntityManager
+            $this->defaultDocumentManager = $odmConfig['defaultDocumentManager'];
+        }
 
         // Defining Doctrine Context configuration
         $this->configuration = array(
@@ -93,6 +111,11 @@ class Container
             'cache' => $cacheConfig['instances'],
             'orm'   => $ormConfig['entityManagers']
         );
+        
+        // In case a ODM configuration is available, add it to the main configuration
+        if (isset($odmConfig['documentManagers'])) {
+            $this->configuration['odm']	= $odmConfig['documentManagers'];
+        }
     }
 
     /**
@@ -212,6 +235,64 @@ class Container
         );
     }
 
+    /**
+     * Prepare ODM EntityManagers configurations.
+     *
+     * @param array $config Doctrine Container configuration
+     *
+     * @return array
+     */
+    private function prepareODMConfiguration(array $config = array())
+    {
+        $odmConfig = $config['odm'];
+        $defaultDocumentManagerName = isset($odmConfig['defaultDocumentManager'])
+                ? $odmConfig['defaultDocumentManager']
+                : $this->defaultDocumentManager;
+    
+        unset($odmConfig['defaultDocumentManager']);
+    
+        $defaultDocumentManager = array(
+            'documentManagerClass' => 'Doctrine\ODM\MongoDB\DocumentManager',
+            'configurationClass' => 'Doctrine\ODM\MongoDB\Configuration',
+            'documentNamespaces' => array(),
+            'connection' => $this->defaultConnection,
+            'proxy' => array(
+                    'autoGenerateClasses' => true,
+                    'namespace' => 'Proxy',
+                    'dir' => APPLICATION_PATH . '/../library/Proxy'
+            ),
+            'hydrator' => array(
+                    'namespace' => 'Hydrators',
+                    'dir' => APPLICATION_PATH . '/../cache'
+            ),
+            'queryCache' => $this->defaultCacheInstance,
+            'resultCache' => $this->defaultCacheInstance,
+            'metadataCache' => $this->defaultCacheInstance,
+            'metadataDrivers' => array(),
+            'connectionString' => ''
+        );
+    
+        $documentManagers = array();
+    
+        if (isset($odmConfig['documentManagers'])) {
+            $configDocumentManagers = $odmConfig['documentManagers'];
+    
+            foreach ($configDocumentManagers as $name => $documentManager) {
+                $name = isset($documentManager['id']) ? $documentManager['id'] : $name;
+                $documentManagers[$name] = array_replace_recursive($defaultDocumentManager, $documentManager);
+            }
+        } else {
+            $documentManagers = array(
+                    $this->defaultConnection => array_replace_recursive($defaultDocumentManager, $odmConfig)
+            );
+        }
+    
+        return array(
+                'defaultDocumentManager' => $defaultDocumentManagerName,
+                'documentManagers' => $documentManagers
+        );
+    }
+    
     /**
      * Prepare ORM EntityManagers configurations.
      *
@@ -353,6 +434,34 @@ class Container
        $loadedInstances = array_keys($this->cacheInstances);
         
        return array_merge($configuredInstances, $loadedInstances);
+    }
+    
+    /**
+     * Retrieve ODM DocumentManager based on its name. If no argument provided,
+     * it will attempt to get the default DocumentManager.
+     * If ODM DocumentManager name could not be found, NameNotFoundException is thrown.
+     *
+     * @throws Bisna\Application\Exception\NameNotFoundException
+     * @param string $dmName Optional ODM DocumentManager name
+     * @return Doctrine\ODM\MongoDB\DocumentManager
+     */
+    public function getDocumentManager($dmName = null)
+    {
+        $dmName = $dmName ?: $this->defaultDocumentManager;
+    
+        // Check if ORM Entity Manager has not yet been initialized
+        if ( ! isset($this->documentManagers[$dmName])) {
+            // Check if ORM EntityManager is configured
+            if ( ! isset($this->configuration['odm'][$dmName])) {
+                throw new \Core\Application\Exception\NameNotFoundException("Unable to find Doctrine ODM DocumentManager '{$dmName}'.");
+            }
+    
+            $this->documentManagers[$dmName] = $this->startODMDocumentManager($this->configuration['odm'][$dmName]);
+    
+            unset($this->configuration['odm'][$dmName]);
+        }
+    
+        return $this->documentManagers[$dmName];
     }
 
     /**
@@ -601,6 +710,20 @@ class Container
 
         return $adapter;
     }
+    
+    /**
+     * Initialize the ODM Document Manager
+     *
+     * @param array $config
+     * @return Doctrine\ODM\MongoDB\DocumentManager
+     */
+    private function startODMDocumentManager(array $config = array())
+    {
+        return \Doctrine\ODM\MongoDB\DocumentManager::create(
+            new \Doctrine\MongoDB\Connection($config['connectionString']),
+            $this->startODMConfiguration($config)
+        );
+    }
 
     /**
      * Initialize ORM EntityManager.
@@ -622,6 +745,51 @@ class Container
         );
     }
 
+    /**
+     * Initialize ODM Configuration.
+     *
+     * @param array $config ODM DocumentManager configuration.
+     * @return Doctrine\ODM\MongoDb\Configuration
+     */
+    private function startODMConfiguration(array $config = array())
+    {
+        $configClass = $config['configurationClass'];
+        $configuration = new $configClass();
+    
+        $configuration = new \Doctrine\ODM\MongoDb\Configuration();
+    
+        // Entity Namespaces configuration
+        foreach ($config['documentNamespaces'] as $alias => $namespace) {
+            $configuration->addDocumentNamespace($alias, $namespace);
+        }
+    
+        // Proxy configuration
+        $configuration->setAutoGenerateProxyClasses(
+            ! in_array($config['proxy']['autoGenerateClasses'], array("0", "false", false))
+        );
+        $configuration->setProxyNamespace($config['proxy']['namespace']);
+        $configuration->setProxyDir($config['proxy']['dir']);
+    
+        $configuration->setHydratorDir($config['hydrator']['dir']);
+        $configuration->setHydratorNamespace($config['hydrator']['namespace']);
+    
+        // Cache configuration
+        $configuration->setMetadataCacheImpl($this->getCacheInstance($config['metadataCache']));
+    
+        // Metadata configuration
+        $configuration->setMetadataDriverImpl($this->startODMMetadata($config['metadataDrivers']));
+    
+        if (isset($config['defaultDb'])) {
+            $configuration->setDefaultDB($config['defaultDb']);
+        }
+    
+        if (isset($config['environment'])) {
+            $configuration->setDefaultDB($config['environment']);
+        }
+    
+        return $configuration;
+    }
+    
     /**
      * Initialize ORM Configuration.
      *
@@ -680,6 +848,76 @@ class Container
     }
 
     /**
+     * Initialize ODM Metadata drivers.
+     *
+     * @param array $config ODM Mapping drivers.
+     * @return Doctrine\ODM\MongoDB\Mapping\Driver\DriverChain
+     */
+    private function startODMMetadata(array $config = array())
+    {
+        $metadataDriver = new \Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain();
+        
+        // Default metadata driver configuration
+        $defaultMetadataDriver = array(
+            'adapterClass'               => 'Doctrine\ODM\MongoDb\Mapping\Driver\AnnotationDriver',
+            'mappingNamespace'           => '',
+            'mappingDirs'                => array(),
+            'annotationReaderClass'      => 'Doctrine\Common\Annotations\AnnotationReader',
+            'annotationReaderCache'      => $this->defaultCacheInstance,
+            'annotationReaderNamespaces' => array()
+        );
+    
+        // Setup ODM AnnotationRegistry
+        if (isset($config['annotationRegistry'])) {
+            $this->startAnnotationRegistry($config['annotationRegistry']);
+        }
+    
+        foreach ($config['drivers'] as $driver) {
+            $driver = array_replace_recursive($defaultMetadataDriver, $driver);
+    
+            $reflClass = new \ReflectionClass($driver['adapterClass']);
+            $nestedDriver = null;
+    
+            if (
+                $reflClass->getName() == 'Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver' ||
+                $reflClass->isSubclassOf('Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver')
+            ) {
+                $annotationReaderClass = $driver['annotationReaderClass'];
+                $annotationReader = new $annotationReaderClass();
+                if (method_exists($annotationReader, 'setDefaultAnnotationNamespace')) {
+                    $annotationReader->setDefaultAnnotationNamespace('Doctrine\ODM\MongoDB\Mapping\\');
+                }
+    
+                if (method_exists($annotationReader, 'setAnnotationNamespaceAlias')) {
+                    $driver['annotationReaderNamespaces']['ODM'] = 'Doctrine\ODM\MongoDB\Mapping\\';
+    
+                    foreach ($driver['annotationReaderNamespaces'] as $alias => $namespace) {
+                        $annotationReader->setAnnotationNamespaceAlias($namespace, $alias);
+                    }
+                }
+    
+                $indexedReader = new \Doctrine\Common\Annotations\CachedReader(
+                    new \Doctrine\Common\Annotations\IndexedReader($annotationReader),
+                    $this->getCacheInstance($driver['annotationReaderCache'])
+                );
+    
+                $nestedDriver = $reflClass->newInstance($indexedReader, $driver['mappingDirs']);
+            } else {
+                $nestedDriver = $reflClass->newInstance($indexedReader, $driver['mappingDirs']);
+            }
+    
+            $metadataDriver->addDriver($nestedDriver, $driver['mappingNamespace']);
+        }
+    
+        if (($drivers = $metadataDriver->getDrivers()) && count($drivers) == 1) {
+            reset($drivers);
+            $metadataDriver = $drivers[key($drivers)];
+        }
+    
+        return $metadataDriver;
+    }
+    
+    /**
      * Initialize ORM Metadata drivers.
      *
      * @param array $config ORM Mapping drivers.
@@ -688,8 +926,8 @@ class Container
      */
     private function startORMMetadata(array $config = array())
     {
-        $metadataDriver = new \Doctrine\ORM\Mapping\Driver\DriverChain();
-
+        $metadataDriver = new \Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain();
+        
         // Default metadata driver configuration
         $defaultMetadataDriver = array(
             'adapterClass'               => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
