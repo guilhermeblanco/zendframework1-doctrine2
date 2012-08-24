@@ -129,7 +129,7 @@ A very rudimentary implementation of a possible base class is here:
 	    /**
 	     * Retrieve the Doctrine Container.
 	     *
-	     * @return Bisna\Application\Container\DoctrineContainer
+	     * @return Bisna\Doctrine\Container
 	     */
 	    public function getDoctrineContainer()
 	    {
