@@ -553,10 +553,12 @@ class Container
         //DBAL Types configuration
         $types = $config['types'];
 
-        if (Type::hasType($name)) {
-            Type::overrideType($name, $className);
-        } else {
-            Type::addType($name, $className);
+        foreach ($types as $name => $className) {
+            if (Type::hasType($name)) {
+                Type::overrideType($name, $className);
+            } else {
+                Type::addType($name, $className);
+            }
         }
 
         return $configuration;
