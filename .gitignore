@@ -1,0 +1,10 @@
+# ignore eclipse files
+.settings
+.buildpath
+
+# ignore third party libs
+vendor
+
+# ignore the composer lock file
+composer.lock
+
