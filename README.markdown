@@ -10,7 +10,7 @@ Install ZF1-D2 using [Composer](http://getcomposer.org)
 
       {
           "require": {
-              "chriswoodford/ZendFramework1-Doctrine2": "master-dev"
+              "guilhermeblanco/ZendFramework1-Doctrine2": "master-dev"
           },
           "minimum-stability": "dev"
       }
