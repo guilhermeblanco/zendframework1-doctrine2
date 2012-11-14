@@ -1,5 +1,5 @@
 {
-    "name": "guilhermeblanco/ZendFramework1-Doctrine2",
+    "name": "guilhermeblanco/zendframework1-doctrine2",
     "require": {
         "zendframework/zendframework1": "1.11.x-dev",
         "doctrine/orm": "2.3.x"
