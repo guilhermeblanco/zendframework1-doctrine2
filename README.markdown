@@ -2,6 +2,27 @@
 
 ZF1-D2 is an integration tool to allow you use Doctrine 2 at the top of Zend Framework 1.
 
+## Installation
+
+Install ZF1-D2 using [Composer](http://getcomposer.org)
+
+### Create your composer.json file
+
+      {
+          "require": {
+              "guilhermeblanco/ZendFramework1-Doctrine2": "master-dev"
+          },
+          "minimum-stability": "dev"
+      }
+
+### Download composer into your application root
+
+      $ curl -s http://getcomposer.org/installer | php
+
+### Install your dependencies
+
+      $ php composer.phar install
+
 ## Configuring
 
 Doctrine 2 requires different parts of configuration.
