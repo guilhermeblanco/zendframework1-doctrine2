@@ -14,7 +14,7 @@ use Bisna\Exception,
 class Container
 {
     /**
-     * @var string Default DBAL Connection name. 
+     * @var string Default DBAL Connection name.
      */
     public $defaultConnection = 'default';
 
@@ -27,7 +27,7 @@ class Container
      * @var string Default ODM DocumentManager name.
      */
     public $defaultDocumentManager = 'default';
-    
+
     /**
      * @var string Default ORM EntityManager name.
      */
@@ -52,13 +52,13 @@ class Container
      * @var array Available ODM DocumentManagers.
      */
     private $documentManagers = array();
-    
+
     /**
      * @var array Available ORM EntityManagers.
      */
     private $entityManagers = array();
 
-    
+
     /**
      * Constructor.
      *
@@ -70,7 +70,7 @@ class Container
         if (isset($config['classLoader'])) {
             $this->registerClassLoaders($config['classLoader']);
         }
-        
+
         // Defining DBAL configuration
         $dbalConfig = $this->prepareDBALConfiguration($config);
 
@@ -96,11 +96,11 @@ class Container
             // Defining default ORM EntityManager
             $this->defaultEntityManager = $ormConfig['defaultEntityManager'];
         }
-        
+
         // Defining ODM configuration
         if (isset($config['odm'])) {
             $odmConfig  = $this->prepareODMConfiguration($config);
-        
+
             // Defining default ORM EntityManager
             $this->defaultDocumentManager = $odmConfig['defaultDocumentManager'];
         }
@@ -111,7 +111,7 @@ class Container
             'cache' => $cacheConfig['instances'],
             'orm'   => $ormConfig['entityManagers']
         );
-        
+
         // In case a ODM configuration is available, add it to the main configuration
         if (isset($odmConfig['documentManagers'])) {
             $this->configuration['odm']	= $odmConfig['documentManagers'];
@@ -127,9 +127,9 @@ class Container
     {
         $classLoaderClass = $config['loaderClass'];
         $classLoaderFile  = $config['loaderFile'];
-        
+
         require_once $classLoaderFile;
-        
+
         foreach ($config['loaders'] as $loaderItem) {
             if (! isset($loaderItem['includePath'])) {
                 $loaderItem['includePath'] = null;
@@ -160,6 +160,7 @@ class Container
             'eventSubscribers'   => array(),
             'configurationClass' => 'Doctrine\DBAL\Configuration',
             'sqlLoggerClass'     => null,
+            'sqlLoggerParams'    => null,
             'types'              => array(),
             'parameters'         => array(
                 'wrapperClass'       => null,
@@ -207,7 +208,7 @@ class Container
             ? $cacheConfig['defaultCacheInstance'] : $this->defaultCacheInstance;
 
         unset($cacheConfig['defaultCacheInstance']);
-            
+
         $defaultCacheInstance = array(
             'adapterClass' => 'Doctrine\Common\Cache\ArrayCache',
             'namespace'    => '',
@@ -248,9 +249,9 @@ class Container
         $defaultDocumentManagerName = isset($odmConfig['defaultDocumentManager'])
                 ? $odmConfig['defaultDocumentManager']
                 : $this->defaultDocumentManager;
-    
+
         unset($odmConfig['defaultDocumentManager']);
-    
+
         $defaultDocumentManager = array(
             'documentManagerClass' => 'Doctrine\ODM\MongoDB\DocumentManager',
             'configurationClass' => 'Doctrine\ODM\MongoDB\Configuration',
@@ -271,12 +272,12 @@ class Container
             'metadataDrivers' => array(),
             'connectionString' => ''
         );
-    
+
         $documentManagers = array();
-    
+
         if (isset($odmConfig['documentManagers'])) {
             $configDocumentManagers = $odmConfig['documentManagers'];
-    
+
             foreach ($configDocumentManagers as $name => $documentManager) {
                 $name = isset($documentManager['id']) ? $documentManager['id'] : $name;
                 $documentManagers[$name] = array_replace_recursive($defaultDocumentManager, $documentManager);
@@ -286,13 +287,13 @@ class Container
                     $this->defaultConnection => array_replace_recursive($defaultDocumentManager, $odmConfig)
             );
         }
-    
+
         return array(
                 'defaultDocumentManager' => $defaultDocumentManagerName,
                 'documentManagers' => $documentManagers
         );
     }
-    
+
     /**
      * Prepare ORM EntityManagers configurations.
      *
@@ -379,17 +380,17 @@ class Container
 
         return $this->connections[$connName];
     }
-    
+
     /**
      * Retrieves a list of names for all Connections configured and/or loaded
-     * 
+     *
      * @return array
      */
     public function getConnectionNames()
     {
        $configuredConnections = array_keys($this->configuration['dbal']);
        $loadedConnections = array_keys($this->connections);
-        
+
        return array_merge($configuredConnections, $loadedConnections);
     }
 
@@ -425,17 +426,17 @@ class Container
 
     /**
      * Retrieves a list of names for all cache instances configured
-     * 
+     *
      * @return array
      */
     public function getCacheInstanceNames()
     {
        $configuredInstances = array_keys($this->configuration['cache']);
        $loadedInstances = array_keys($this->cacheInstances);
-        
+
        return array_merge($configuredInstances, $loadedInstances);
     }
-    
+
     /**
      * Retrieve ODM DocumentManager based on its name. If no argument provided,
      * it will attempt to get the default DocumentManager.
@@ -448,19 +449,19 @@ class Container
     public function getDocumentManager($dmName = null)
     {
         $dmName = $dmName ?: $this->defaultDocumentManager;
-    
+
         // Check if ORM Entity Manager has not yet been initialized
         if ( ! isset($this->documentManagers[$dmName])) {
             // Check if ORM EntityManager is configured
             if ( ! isset($this->configuration['odm'][$dmName])) {
                 throw new \Core\Application\Exception\NameNotFoundException("Unable to find Doctrine ODM DocumentManager '{$dmName}'.");
             }
-    
+
             $this->documentManagers[$dmName] = $this->startODMDocumentManager($this->configuration['odm'][$dmName]);
-    
+
             unset($this->configuration['odm'][$dmName]);
         }
-    
+
         return $this->documentManagers[$dmName];
     }
 
@@ -490,23 +491,23 @@ class Container
 
             unset($this->configuration['orm'][$emName]);
         }
-        
+
         return $this->entityManagers[$emName];
     }
 
     /**
      * Retrieves a list of names for all Entity Managers configured and/or loaded
-     * 
+     *
      * @return array
      */
     public function getEntityManagerNames()
     {
        $configuredEMs = array_keys($this->configuration['orm']);
        $loadedEMs = array_keys($this->entityManagers);
-        
+
        return array_merge($configuredEMs, $loadedEMs);
     }
-    
+
     /**
      * Initialize the DBAL Connection.
      *
@@ -547,9 +548,13 @@ class Container
         // SQL Logger configuration
         if ( ! empty($config['sqlLoggerClass'])) {
             $sqlLoggerClass = $config['sqlLoggerClass'];
-            $configuration->setSQLLogger(new $sqlLoggerClass());
+            if ( !empty($config['sqlLoggerParams']) ) {
+                $configuration->setSQLLogger(new $sqlLoggerClass($config['sqlLoggerParams']));
+            } else {
+                $configuration->setSQLLogger(new $sqlLoggerClass());
+            }
         }
-        
+
         //DBAL Types configuration
         $types = $config['types'];
 
@@ -579,7 +584,7 @@ class Container
         // Event Subscribers configuration
         foreach ($config['eventSubscribers'] as $subscriber) {
             if ($subscriber) {
-                $eventManager->addEventSubscriber(new $subscriber());   
+                $eventManager->addEventSubscriber(new $subscriber());
             }
         }
 
@@ -714,7 +719,7 @@ class Container
 
         return $adapter;
     }
-    
+
     /**
      * Initialize the ODM Document Manager
      *
@@ -759,41 +764,41 @@ class Container
     {
         $configClass = $config['configurationClass'];
         $configuration = new $configClass();
-    
+
         $configuration = new \Doctrine\ODM\MongoDb\Configuration();
-    
+
         // Entity Namespaces configuration
         foreach ($config['documentNamespaces'] as $alias => $namespace) {
             $configuration->addDocumentNamespace($alias, $namespace);
         }
-    
+
         // Proxy configuration
         $configuration->setAutoGenerateProxyClasses(
             ! in_array($config['proxy']['autoGenerateClasses'], array("0", "false", false))
         );
         $configuration->setProxyNamespace($config['proxy']['namespace']);
         $configuration->setProxyDir($config['proxy']['dir']);
-    
+
         $configuration->setHydratorDir($config['hydrator']['dir']);
         $configuration->setHydratorNamespace($config['hydrator']['namespace']);
-    
+
         // Cache configuration
         $configuration->setMetadataCacheImpl($this->getCacheInstance($config['metadataCache']));
-    
+
         // Metadata configuration
         $configuration->setMetadataDriverImpl($this->startODMMetadata($config['metadataDrivers']));
-    
+
         if (isset($config['defaultDb'])) {
             $configuration->setDefaultDB($config['defaultDb']);
         }
-    
+
         if (isset($config['environment'])) {
             $configuration->setDefaultDB($config['environment']);
         }
-    
+
         return $configuration;
     }
-    
+
     /**
      * Initialize ORM Configuration.
      *
@@ -847,7 +852,7 @@ class Container
         if (isset($config['defaultRepositoryClass'])) {
             $configuration->setDefaultRepositoryClassName($config['defaultRepositoryClass']);
         }
-        
+
         return $configuration;
     }
 
@@ -860,7 +865,7 @@ class Container
     private function startODMMetadata(array $config = array())
     {
         $metadataDriver = new \Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain();
-        
+
         // Default metadata driver configuration
         $defaultMetadataDriver = array(
             'adapterClass'               => 'Doctrine\ODM\MongoDb\Mapping\Driver\AnnotationDriver',
@@ -870,18 +875,18 @@ class Container
             'annotationReaderCache'      => $this->defaultCacheInstance,
             'annotationReaderNamespaces' => array()
         );
-    
+
         // Setup ODM AnnotationRegistry
         if (isset($config['annotationRegistry'])) {
             $this->startAnnotationRegistry($config['annotationRegistry']);
         }
-    
+
         foreach ($config['drivers'] as $driver) {
             $driver = array_replace_recursive($defaultMetadataDriver, $driver);
-    
+
             $reflClass = new \ReflectionClass($driver['adapterClass']);
             $nestedDriver = null;
-    
+
             if (
                 $reflClass->getName() == 'Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver' ||
                 $reflClass->isSubclassOf('Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver')
@@ -891,36 +896,36 @@ class Container
                 if (method_exists($annotationReader, 'setDefaultAnnotationNamespace')) {
                     $annotationReader->setDefaultAnnotationNamespace('Doctrine\ODM\MongoDB\Mapping\\');
                 }
-    
+
                 if (method_exists($annotationReader, 'setAnnotationNamespaceAlias')) {
                     $driver['annotationReaderNamespaces']['ODM'] = 'Doctrine\ODM\MongoDB\Mapping\\';
-    
+
                     foreach ($driver['annotationReaderNamespaces'] as $alias => $namespace) {
                         $annotationReader->setAnnotationNamespaceAlias($namespace, $alias);
                     }
                 }
-    
+
                 $indexedReader = new \Doctrine\Common\Annotations\CachedReader(
                     new \Doctrine\Common\Annotations\IndexedReader($annotationReader),
                     $this->getCacheInstance($driver['annotationReaderCache'])
                 );
-    
+
                 $nestedDriver = $reflClass->newInstance($indexedReader, $driver['mappingDirs']);
             } else {
                 $nestedDriver = $reflClass->newInstance($indexedReader, $driver['mappingDirs']);
             }
-    
+
             $metadataDriver->addDriver($nestedDriver, $driver['mappingNamespace']);
         }
-    
+
         if (($drivers = $metadataDriver->getDrivers()) && count($drivers) == 1) {
             reset($drivers);
             $metadataDriver = $drivers[key($drivers)];
         }
-    
+
         return $metadataDriver;
     }
-    
+
     /**
      * Initialize ORM Metadata drivers.
      *
@@ -931,7 +936,7 @@ class Container
     private function startORMMetadata(array $config = array())
     {
         $metadataDriver = new \Doctrine\Common\Persistence\Mapping\Driver\MappingDriverChain();
-        
+
         // Default metadata driver configuration
         $defaultMetadataDriver = array(
             'adapterClass'               => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
@@ -942,15 +947,15 @@ class Container
             'annotationReaderNamespaces' => array()
         );
 
-        
+
         // Setup AnnotationRegistry
         if (isset($config['annotationRegistry'])) {
             $this->startAnnotationRegistry($config['annotationRegistry']);
         }
-        
+
         foreach ($config['drivers'] as $driver) {
             $driver = array_replace_recursive($defaultMetadataDriver, $driver);
-            
+
             $reflClass = new \ReflectionClass($driver['adapterClass']);
             $nestedDriver = null;
 
@@ -960,7 +965,7 @@ class Container
             ) {
                 $annotationReaderClass = $driver['annotationReaderClass'];
                 $annotationReader = new $annotationReaderClass();
-                
+
                 // For Doctrine >= 2.2
                 if (method_exists($annotationReader, 'addNamespace')) {
                     $annotationReader->addNamespace('Doctrine\ORM\Mapping');
@@ -972,14 +977,14 @@ class Container
 
                 if (method_exists($annotationReader, 'setAnnotationNamespaceAlias')) {
                     $driver['annotationReaderNamespaces']['ORM'] = 'Doctrine\ORM\Mapping\\';
-                    
+
                     foreach ($driver['annotationReaderNamespaces'] as $alias => $namespace) {
                         $annotationReader->setAnnotationNamespaceAlias($namespace, $alias);
                     }
                 }
-                
+
                 $indexedReader = new \Doctrine\Common\Annotations\CachedReader(
-                    new \Doctrine\Common\Annotations\IndexedReader($annotationReader), 
+                    new \Doctrine\Common\Annotations\IndexedReader($annotationReader),
                     $this->getCacheInstance($driver['annotationReaderCache'])
                 );
 
@@ -987,7 +992,7 @@ class Container
             } else {
                 $nestedDriver = $reflClass->newInstance($driver['mappingDirs']);
             }
-            
+
             $metadataDriver->addDriver($nestedDriver, $driver['mappingNamespace']);
         }
 
@@ -995,13 +1000,13 @@ class Container
             reset($drivers);
             $metadataDriver = $drivers[key($drivers)];
         }
-        
+
         return $metadataDriver;
     }
-    
+
     /**
      * Initialize ORM Metatada Annotation Registry driver
-     * 
+     *
      * @param array $config  ORM Annotation Registry configuration.
      */
     private function startAnnotationRegistry($config)
@@ -1012,16 +1017,16 @@ class Container
                 AnnotationRegistry::registerFile($file);
             }
         }
-        
+
         // Load annotation namespaces
         if (isset($config['annotationNamespaces']) && is_array($config['annotationNamespaces'])) {
             foreach($config['annotationNamespaces'] as $annotationNamespace) {
                 AnnotationRegistry::registerAutoloadNamespace(
-                        $annotationNamespace['namespace'], 
+                        $annotationNamespace['namespace'],
                         $annotationNamespace['includePath']
                 );
             }
-            
-        }        
+
+        }
     }
 }
