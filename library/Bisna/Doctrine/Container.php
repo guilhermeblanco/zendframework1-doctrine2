@@ -156,13 +156,13 @@ class Container
         unset($dbalConfig['defaultConnection']);
 
         $defaultConnection = array(
-            'eventManagerClass'  => 'Doctrine\Common\EventManager',
-            'eventSubscribers'   => array(),
-            'configurationClass' => 'Doctrine\DBAL\Configuration',
-            'sqlLoggerClass'     => null,
-            'sqlLoggerParams'    => null,
-            'types'              => array(),
-            'parameters'         => array(
+            'eventManagerClass'   => 'Doctrine\Common\EventManager',
+            'eventSubscribers'    => array(),
+            'configurationClass'  => 'Doctrine\DBAL\Configuration',
+            'sqlLoggerClass'      => null,
+            'sqlLoggerParams'     => null,
+            'types'               => array(),
+            'parameters'          => array(
                 'wrapperClass'       => null,
                 'driver'              => 'pdo_mysql',
                 'host'                => 'localhost',
@@ -323,6 +323,7 @@ class Container
             'resultCache'             => $this->defaultCacheInstance,
             'metadataCache'           => $this->defaultCacheInstance,
             'metadataDrivers'         => array(),
+            'namingStrategyClass'     => 'Doctrine\ORM\Mapping\DefaultNamingStrategy',
             'DQLFunctions'            => array(
                 'numeric'             => array(),
                 'datetime'            => array(),
@@ -787,6 +788,9 @@ class Container
 
         // Metadata configuration
         $configuration->setMetadataDriverImpl($this->startODMMetadata($config['metadataDrivers']));
+
+        // Naming strategy
+        $configuration->setNamingStrategy(new $config['namingStrategyClass']);
 
         if (isset($config['defaultDb'])) {
             $configuration->setDefaultDB($config['defaultDb']);
