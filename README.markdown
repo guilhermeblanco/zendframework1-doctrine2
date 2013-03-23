@@ -40,7 +40,7 @@ Here is an example of configuration:
 
     ; Doctrine Common ClassLoader class and file
     resources.doctrine.classLoader.loaderClass = "Doctrine\Common\ClassLoader"
-    resources.doctrine.classLoader.loaderFile  = APPLICATION_PATH "/../library/vendor/doctrine/common/lib/vendor/doctrine/common/lib/Doctrine/Common/ClassLoader.php"
+    resources.doctrine.classLoader.loaderFile  = APPLICATION_PATH "/../library/vendor/doctrine/common/lib/Doctrine/Common/ClassLoader.php"
 
     ; Namespace loader for Doctrine\Common
     resources.doctrine.classLoader.loaders.doctrine_common.namespace   = "Doctrine\Common"
