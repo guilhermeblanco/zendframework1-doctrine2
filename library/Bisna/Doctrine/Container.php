@@ -1027,7 +1027,7 @@ class Container
             foreach($config['annotationNamespaces'] as $annotationNamespace) {
                 AnnotationRegistry::registerAutoloadNamespace(
                         $annotationNamespace['namespace']
-                        , isset($annotationNamespace['includePath']) ? isset($annotationNamespace['includePath']) : null
+                        , isset($annotationNamespace['includePath']) ? $annotationNamespace['includePath'] : null
                 );
             }
 
