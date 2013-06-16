@@ -789,9 +789,6 @@ class Container
         // Metadata configuration
         $configuration->setMetadataDriverImpl($this->startODMMetadata($config['metadataDrivers']));
 
-        // Naming strategy
-        $configuration->setNamingStrategy(new $config['namingStrategyClass']);
-
         if (isset($config['defaultDb'])) {
             $configuration->setDefaultDB($config['defaultDb']);
         }
@@ -856,6 +853,9 @@ class Container
         if (isset($config['defaultRepositoryClass'])) {
             $configuration->setDefaultRepositoryClassName($config['defaultRepositoryClass']);
         }
+
+        // Naming strategy for ORM
+        $configuration->setNamingStrategy(new $config['namingStrategyClass']);
 
         return $configuration;
     }
