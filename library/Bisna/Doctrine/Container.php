@@ -19,7 +19,7 @@ class Container
     public $defaultConnection = 'default';
 
     /**
-     * @var default Default Cache Instance name.
+     * @var string Default Cache Instance name.
      */
     public $defaultCacheInstance = 'default';
 
@@ -121,7 +121,7 @@ class Container
     /**
      * Register Doctrine Class Loaders
      *
-     * @param array Doctrine Class Loader configuration
+     * @param array $config Doctrine Class Loader configuration
      */
     private function registerClassLoaders(array $config = array())
     {
@@ -156,12 +156,13 @@ class Container
         unset($dbalConfig['defaultConnection']);
 
         $defaultConnection = array(
-            'eventManagerClass'  => 'Doctrine\Common\EventManager',
-            'eventSubscribers'   => array(),
-            'configurationClass' => 'Doctrine\DBAL\Configuration',
-            'sqlLoggerClass'     => null,
-            'types'              => array(),
-            'parameters'         => array(
+            'eventManagerClass'   => 'Doctrine\Common\EventManager',
+            'eventSubscribers'    => array(),
+            'configurationClass'  => 'Doctrine\DBAL\Configuration',
+            'sqlLoggerClass'      => null,
+            'sqlLoggerParams'     => null,
+            'types'               => array(),
+            'parameters'          => array(
                 'wrapperClass'       => null,
                 'driver'              => 'pdo_mysql',
                 'host'                => 'localhost',
@@ -322,6 +323,7 @@ class Container
             'resultCache'             => $this->defaultCacheInstance,
             'metadataCache'           => $this->defaultCacheInstance,
             'metadataDrivers'         => array(),
+            'namingStrategyClass'     => 'Doctrine\ORM\Mapping\DefaultNamingStrategy',
             'DQLFunctions'            => array(
                 'numeric'             => array(),
                 'datetime'            => array(),
@@ -355,11 +357,11 @@ class Container
      * it will attempt to get the default Connection.
      * If DBAL Connection name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Bisna\Application\Exception\NameNotFoundException
+     * @throws \Bisna\Exception\NameNotFoundException
      *
      * @param string $connName Optional DBAL Connection name
      *
-     * @return Doctrine\DBAL\Connection DBAL Connection
+     * @return \Doctrine\DBAL\Connection DBAL Connection
      */
     public function getConnection($connName = null)
     {
@@ -398,11 +400,11 @@ class Container
      * it will attempt to get the default Instance.
      * If Cache Instance name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Bisna\Application\Exception\NameNotFoundException
+     * @throws \Bisna\Exception\NameNotFoundException
      *
      * @param string $cacheName Optional Cache Instance name
      *
-     * @return Doctrine\Common\Cache\Cache Cache Instance
+     * @return \Doctrine\Common\Cache\Cache Cache Instance
      */
     public function getCacheInstance($cacheName = null)
     {
@@ -469,11 +471,11 @@ class Container
      * it will attempt to get the default EntityManager.
      * If ORM EntityManager name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Bisna\Application\Exception\NameNotFoundException
+     * @throws \Bisna\Exception\NameNotFoundException
      *
      * @param string $emName Optional ORM EntityManager name
      *
-     * @return Doctrine\ORM\EntityManager ORM EntityManager
+     * @return \Doctrine\ORM\EntityManager ORM EntityManager
      */
     public function getEntityManager($emName = null)
     {
@@ -512,15 +514,24 @@ class Container
      *
      * @param array $config DBAL Connection configuration.
      *
-     * @return Doctrine\DBAL\Connection
+     * @return \Doctrine\DBAL\Connection
      */
     private function startDBALConnection(array $config = array())
     {
-        return \Doctrine\DBAL\DriverManager::getConnection(
+        $connection = \Doctrine\DBAL\DriverManager::getConnection(
             $config['parameters'],
             $this->startDBALConfiguration($config),
             $this->startDBALEventManager($config)
         );
+
+        // Type mappings
+        if (isset($config['typeMapping'])) {
+            foreach ($config['typeMapping'] as $dbType => $doctrineType) {
+                $connection->getDatabasePlatform()->registerDoctrineTypeMapping($dbType, $doctrineType);
+            }
+        }
+
+        return $connection;
     }
 
     /**
@@ -528,7 +539,7 @@ class Container
      *
      * @param array $config DBAL Connection configuration.
      *
-     * @return Doctrine\DBAL\Configuration
+     * @return \Doctrine\DBAL\Configuration
      */
     private function startDBALConfiguration(array $config = array())
     {
@@ -538,14 +549,22 @@ class Container
         // SQL Logger configuration
         if ( ! empty($config['sqlLoggerClass'])) {
             $sqlLoggerClass = $config['sqlLoggerClass'];
-            $configuration->setSQLLogger(new $sqlLoggerClass());
+            if ( !empty($config['sqlLoggerParams']) ) {
+                $configuration->setSQLLogger(new $sqlLoggerClass($config['sqlLoggerParams']));
+            } else {
+                $configuration->setSQLLogger(new $sqlLoggerClass());
+            }
         }
 
         //DBAL Types configuration
         $types = $config['types'];
 
         foreach ($types as $name => $className) {
-            Type::addType($name, $className);
+            if (Type::hasType($name)) {
+                Type::overrideType($name, $className);
+            } else {
+                Type::addType($name, $className);
+            }
         }
 
         return $configuration;
@@ -556,7 +575,7 @@ class Container
      *
      * @param array $config DBAL Connection configuration.
      *
-     * @return Doctrine\Common\EventManager
+     * @return \Doctrine\Common\EventManager
      */
     private function startDBALEventManager(array $config = array())
     {
@@ -565,9 +584,9 @@ class Container
 
         // Event Subscribers configuration
         foreach ($config['eventSubscribers'] as $subscriber) {
-       	    if ($subscriber) {
-       	        $eventManager->addEventSubscriber(new $subscriber());
-       	    }
+            if ($subscriber) {
+                $eventManager->addEventSubscriber(new $subscriber());
+            }
         }
 
         return $eventManager;
@@ -578,7 +597,7 @@ class Container
      *
      * @param array $config Cache Instance configuration.
      *
-     * @return Doctrine\Common\Cache\Cache
+     * @return \Doctrine\Common\Cache\Cache
      */
     private function startCacheInstance(array $config = array())
     {
@@ -625,6 +644,78 @@ class Container
             }
 
             $adapter->setMemcache($memcache);
+        } else if ($adapter instanceof \Doctrine\Common\Cache\MemcachedCache) {
+            // Prevent stupid PHP error of missing extension (if other driver is being used)
+            $memcacheClassName = 'Memcached';
+            $memcache = new $memcacheClassName();
+
+            // Default server configuration
+            $defaultServer = array(
+                'host'          => 'localhost',
+                'port'          => 11211,
+                'weight'        => 1,
+            );
+
+            if (isset($config['options']['servers'])) {
+                foreach ($config['options']['servers'] as $server) {
+                    $server = array_replace_recursive($defaultServer, $server);
+
+                    $memcache->addServer(
+                        $server['host'],
+                        $server['port'],
+                        $server['weight']
+                    );
+                }
+            }
+
+            $adapter->setMemcached($memcache);
+        } else if ($adapter instanceof \Doctrine\Common\Cache\RedisCache) {
+            // Prevent stupid PHP error of missing extension (if other driver is being used)
+            $redisClassName = 'Redis';
+            $redis = new $redisClassName();
+
+            // Default server configuration
+            $defaultServer = array(
+                'host'         => 'localhost',
+                'port'         => 6379,
+                'timeout'      => 0,
+                'persistent'   => false,
+                'persistentId' => null,
+                'prefix'       => null,
+                'password'     => null,
+                'database'     => 0,
+            );
+
+            $server = isset($config['options'])
+                ? array_replace_recursive($defaultServer, $config['options'])
+                : $defaultServer;
+
+            if (isset($server['persistent']) && $server['persistent']) {
+                $redis->pconnect(
+                    $server['host'],
+                    $server['port'],
+                    $server['timeout'],
+                    isset($server['persistentId']) ? $server['persistentId'] : null
+                );
+            } else {
+                $redis->connect(
+                    $server['host'],
+                    $server['port'],
+                    $server['timeout']
+                );
+            }
+
+            if (isset($server['password'])) {
+                $redis->auth($server['password']);
+            }
+
+            if (isset($server['prefix'])) {
+                $redis->setOption(\Redis::OPT_PREFIX, $server['prefix']);
+            }
+
+            $redis->select($server['database']);
+
+            $adapter->setRedis($redis);
         }
 
         return $adapter;
@@ -649,7 +740,7 @@ class Container
      *
      * @param array $config ORM EntityManager configuration.
      *
-     * @return Doctrine\ORM\EntityManager
+     * @return \Doctrine\ORM\EntityManager
      */
     private function startORMEntityManager(array $config = array())
     {
@@ -698,6 +789,9 @@ class Container
         // Metadata configuration
         $configuration->setMetadataDriverImpl($this->startODMMetadata($config['metadataDrivers']));
 
+        // Naming strategy
+        $configuration->setNamingStrategy(new $config['namingStrategyClass']);
+
         if (isset($config['defaultDb'])) {
             $configuration->setDefaultDB($config['defaultDb']);
         }
@@ -714,7 +808,7 @@ class Container
      *
      * @param array $config ORM EntityManager configuration.
      *
-     * @return Doctrine\ORM\Configuration
+     * @return \Doctrine\ORM\Configuration
      */
     private function startORMConfiguration(array $config = array())
     {
@@ -841,7 +935,7 @@ class Container
      *
      * @param array $config ORM Mapping drivers.
      *
-     * @return Doctrine\ORM\Mapping\Driver\DriverChain
+     * @return \Doctrine\ORM\Mapping\Driver\DriverChain
      */
     private function startORMMetadata(array $config = array())
     {

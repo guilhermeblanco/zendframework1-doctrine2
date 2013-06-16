@@ -1,0 +1,10 @@
+{
+    "name": "guilhermeblanco/zendframework1-doctrine2",
+    "require": {
+        "zendframework/zendframework1": "~1.9",
+        "doctrine/orm": "2.3.x"
+    },
+    "autoload": {
+        "psr-0": {"Bisna": "library/"}
+    }
+}
