@@ -775,6 +775,7 @@ class Container
 
         // Proxy configuration
         $configuration->setAutoGenerateProxyClasses(
+            $config['proxy']['autoGenerateClasses'] === true ||
             ! in_array($config['proxy']['autoGenerateClasses'], array("0", "false", false))
         );
         $configuration->setProxyNamespace($config['proxy']['namespace']);
@@ -821,6 +822,7 @@ class Container
 
         // Proxy configuration
         $configuration->setAutoGenerateProxyClasses(
+            $config['proxy']['autoGenerateClasses'] === true ||
             ! in_array($config['proxy']['autoGenerateClasses'], array("0", "false", false))
         );
         $configuration->setProxyNamespace($config['proxy']['namespace']);
