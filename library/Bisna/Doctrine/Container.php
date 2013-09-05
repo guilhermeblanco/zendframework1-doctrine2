@@ -500,7 +500,10 @@ class Container
 
         //add configured filters
         foreach($this->filters as $filter) {
-            $this->entityManagers[$emName]->getFilters()->enable($filter);
+            $filterClass = $this->entityManagers[$emName]->getConfiguration()->getFilterClassName($filter);
+            if (class_exists($filterClass)) {
+                $this->entityManagers[$emName]->getFilters()->enable($filter);
+            }
         }
 
         return $this->entityManagers[$emName];
