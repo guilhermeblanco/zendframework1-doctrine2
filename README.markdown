@@ -40,23 +40,23 @@ Here is an example of configuration:
 
     ; Doctrine Common ClassLoader class and file
     resources.doctrine.classLoader.loaderClass = "Doctrine\Common\ClassLoader"
-    resources.doctrine.classLoader.loaderFile  = APPLICATION_PATH "/../library/vendor/Doctrine/lib/vendor/doctrine-common/lib/Doctrine/Common/ClassLoader.php"
+    resources.doctrine.classLoader.loaderFile  = APPLICATION_PATH "/../library/vendor/doctrine/common/lib/Doctrine/Common/ClassLoader.php"
 
     ; Namespace loader for Doctrine\Common
     resources.doctrine.classLoader.loaders.doctrine_common.namespace   = "Doctrine\Common"
-    resources.doctrine.classLoader.loaders.doctrine_common.includePath = APPLICATION_PATH "/../library/vendor/Doctrine/lib/vendor/doctrine-common/lib"
+    resources.doctrine.classLoader.loaders.doctrine_common.includePath = APPLICATION_PATH "/../library/vendor/doctrine/common/lib/Doctrine/Common"
 
     ; Namespace loader for Doctrine\DBAL
     resources.doctrine.classLoader.loaders.doctrine_dbal.namespace   = "Doctrine\DBAL"
-    resources.doctrine.classLoader.loaders.doctrine_dbal.includePath = APPLICATION_PATH "/../library/vendor/Doctrine/lib/vendor/doctrine-dbal/lib"
+    resources.doctrine.classLoader.loaders.doctrine_dbal.includePath = APPLICATION_PATH "/../library/vendor/doctrine/dbal/lib/Doctrine/DBAL"
 
     ; Namespace loader for Doctrine\ORM
     resources.doctrine.classLoader.loaders.doctrine_orm.namespace   = "Doctrine\ORM"
-    resources.doctrine.classLoader.loaders.doctrine_orm.includePath = APPLICATION_PATH "/../library/vendor/Doctrine/lib"
+    resources.doctrine.classLoader.loaders.doctrine_orm.includePath = APPLICATION_PATH "/../library/vendor/doctrine/orm/lib/Doctrine/ORM"
 
     ; Namespace loader for Symfony\Component\Console
     resources.doctrine.classLoader.loaders.symfony_console.namespace   = "Symfony\Component\Console"
-    resources.doctrine.classLoader.loaders.symfony_console.includePath = APPLICATION_PATH "/../library/vendor/Doctrine/lib/vendor"
+    resources.doctrine.classLoader.loaders.symfony_console.includePath = APPLICATION_PATH "/../library/vendor/symfony/console/Symfony/Component/Console"
 
     ; Namespace loader for Symfony\Component\Yaml
     resources.doctrine.classLoader.loaders.symfony_yaml.namespace   = "Symfony\Component\Yaml"
