@@ -759,14 +759,14 @@ class Container
      * Initialize ODM Configuration.
      *
      * @param array $config ODM DocumentManager configuration.
-     * @return Doctrine\ODM\MongoDb\Configuration
+     * @return Doctrine\ODM\MongoDB\Configuration
      */
     private function startODMConfiguration(array $config = array())
     {
         $configClass = $config['configurationClass'];
         $configuration = new $configClass();
 
-        $configuration = new \Doctrine\ODM\MongoDb\Configuration();
+        $configuration = new \Doctrine\ODM\MongoDB\Configuration();
 
         // Entity Namespaces configuration
         foreach ($config['documentNamespaces'] as $alias => $namespace) {
@@ -874,7 +874,7 @@ class Container
 
         // Default metadata driver configuration
         $defaultMetadataDriver = array(
-            'adapterClass'               => 'Doctrine\ODM\MongoDb\Mapping\Driver\AnnotationDriver',
+            'adapterClass'               => 'Doctrine\ODM\MongoDB\Mapping\Driver\AnnotationDriver',
             'mappingNamespace'           => '',
             'mappingDirs'                => array(),
             'annotationReaderClass'      => 'Doctrine\Common\Annotations\AnnotationReader',
