@@ -890,6 +890,10 @@ class Container
         foreach ($config['drivers'] as $driver) {
             $driver = array_replace_recursive($defaultMetadataDriver, $driver);
 
+            if (method_exists($driver['adapterClass'], 'registerAnnotationClasses')) {
+                $driver['adapterClass']::registerAnnotationClasses();
+            }
+            
             $reflClass = new \ReflectionClass($driver['adapterClass']);
             $nestedDriver = null;
 
