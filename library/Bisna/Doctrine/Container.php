@@ -611,6 +611,31 @@ class Container
 
         if (method_exists($adapter, 'initialize')) {
             $adapter->initialize($config);
+        } else if ($adapter instanceof \Doctrine\Common\Cache\CouchbaseCache) {
+
+            // Couchbase configuration
+            $couchbaseConfig = array(
+                'hosts'         => array('localhost:8091'),
+                'user'          => isset($config['options']['user'])       ? $config['options']['user']       : '',
+                'password'      => isset($config['options']['password'])   ? $config['options']['password']   : '',
+                'bucket'        => isset($config['options']['bucket'])     ? $config['options']['bucket']     : 'default',
+                'persistent'    => isset($config['options']['persistent']) ? $config['options']['persistent'] : true,
+            );
+
+            if (isset($config['options']['servers'])) {
+
+                unset($couchbaseConfig['hosts']);
+
+                foreach ($config['options']['servers'] as $server) {
+                    $couchbaseConfig['hosts'][] = $server;
+                }
+            }
+
+            // Prevent stupid PHP error of missing extension (if other driver is being used)
+            $couchbaseClassName = 'Couchbase';
+            $couchbase = new $couchbaseClassName($couchbaseConfig);
+
+            $adapter->setCouchbase($couchbase);
         } else if ($adapter instanceof \Doctrine\Common\Cache\MemcacheCache) {
             // Prevent stupid PHP error of missing extension (if other driver is being used)
             $memcacheClassName = 'Memcache';
