@@ -69,6 +69,7 @@ Currently, Doctrine 2 allows you to use the following different Cache drivers:
 
 - APC
 - Array
+- Couchbase
 - Memcache
 - Xcache
 
