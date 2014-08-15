@@ -614,26 +614,15 @@ class Container
         } else if ($adapter instanceof \Doctrine\Common\Cache\CouchbaseCache) {
 
             // Couchbase configuration
-            $couchbaseConfig = array(
-                'hosts'         => array('localhost:8091'),
-                'user'          => isset($config['options']['user'])       ? $config['options']['user']       : '',
-                'password'      => isset($config['options']['password'])   ? $config['options']['password']   : '',
-                'bucket'        => isset($config['options']['bucket'])     ? $config['options']['bucket']     : 'default',
-                'persistent'    => isset($config['options']['persistent']) ? $config['options']['persistent'] : true,
-            );
-
-            if (isset($config['options']['servers'])) {
-
-                unset($couchbaseConfig['hosts']);
-
-                foreach ($config['options']['servers'] as $server) {
-                    $couchbaseConfig['hosts'][] = $server;
-                }
-            }
+            $hosts      = isset($config['options']['hosts'])      ? $config['options']['hosts']      : array('localhost');
+            $user       = isset($config['options']['user'])       ? $config['options']['user']       : '';
+            $password   = isset($config['options']['password'])   ? $config['options']['password']   : '';
+            $bucket     = isset($config['options']['bucket'])     ? $config['options']['bucket']     : 'default';
+            $persistent = isset($config['options']['persistent']) ? $config['options']['persistent'] : true;
 
             // Prevent stupid PHP error of missing extension (if other driver is being used)
             $couchbaseClassName = 'Couchbase';
-            $couchbase = new $couchbaseClassName($couchbaseConfig);
+            $couchbase = new $couchbaseClassName($hosts, $user, $password, $bucket, $persistent);
 
             $adapter->setCouchbase($couchbase);
         } else if ($adapter instanceof \Doctrine\Common\Cache\MemcacheCache) {
