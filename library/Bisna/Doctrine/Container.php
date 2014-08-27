@@ -850,6 +850,13 @@ class Container
         // Metadata configuration
         $configuration->setMetadataDriverImpl($this->startORMMetadata($config['metadataDrivers']));
 
+        //Filters http://doctrine-orm.readthedocs.org/en/latest/reference/filters.html#configuration
+        if(isset($config['filters'])){
+            foreach ($config['filters'] as $name => $className) {
+                $configuration->addFilter($name, $className);
+            }
+        }
+
         // DQL Functions configuration
         $dqlFunctions = $config['DQLFunctions'];
 
