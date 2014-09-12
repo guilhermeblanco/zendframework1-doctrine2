@@ -158,6 +158,7 @@ class Container
         $defaultConnection = array(
             'eventManagerClass'   => 'Doctrine\Common\EventManager',
             'eventSubscribers'    => array(),
+            'eventListeners'      => array(),
             'configurationClass'  => 'Doctrine\DBAL\Configuration',
             'sqlLoggerClass'      => null,
             'sqlLoggerParams'     => null,
@@ -586,6 +587,13 @@ class Container
         foreach ($config['eventSubscribers'] as $subscriber) {
             if ($subscriber) {
                 $eventManager->addEventSubscriber(new $subscriber());
+            }
+        }
+
+        // Event Listeners configuration
+        foreach ($config['eventListeners'] as $event=>$listener) {
+            if ($listener) {
+                $eventManager->addEventListener($event, new $listener());
             }
         }
 
