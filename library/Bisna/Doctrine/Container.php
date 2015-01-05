@@ -443,9 +443,9 @@ class Container
      * it will attempt to get the default DocumentManager.
      * If ODM DocumentManager name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Bisna\Application\Exception\NameNotFoundException
+     * @throws \Core\Application\Exception\NameNotFoundException
      * @param string $dmName Optional ODM DocumentManager name
-     * @return Doctrine\ODM\MongoDB\DocumentManager
+     * @return \Doctrine\ODM\MongoDB\DocumentManager
      */
     public function getDocumentManager($dmName = null)
     {
@@ -739,7 +739,7 @@ class Container
      * Initialize the ODM Document Manager
      *
      * @param array $config
-     * @return Doctrine\ODM\MongoDB\DocumentManager
+     * @return \Doctrine\ODM\MongoDB\DocumentManager
      */
     private function startODMDocumentManager(array $config = array())
     {
@@ -773,7 +773,7 @@ class Container
      * Initialize ODM Configuration.
      *
      * @param array $config ODM DocumentManager configuration.
-     * @return Doctrine\ODM\MongoDB\Configuration
+     * @return \Doctrine\ODM\MongoDB\Configuration
      */
     private function startODMConfiguration(array $config = array())
     {
@@ -887,7 +887,7 @@ class Container
      * Initialize ODM Metadata drivers.
      *
      * @param array $config ODM Mapping drivers.
-     * @return Doctrine\ODM\MongoDB\Mapping\Driver\DriverChain
+     * @return \Doctrine\ODM\MongoDB\Mapping\Driver\DriverChain
      */
     private function startODMMetadata(array $config = array())
     {
