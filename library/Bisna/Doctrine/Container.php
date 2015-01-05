@@ -943,7 +943,7 @@ class Container
 
                 $nestedDriver = $reflClass->newInstance($indexedReader, $driver['mappingDirs']);
             } else {
-                $nestedDriver = $reflClass->newInstance($indexedReader, $driver['mappingDirs']);
+                $nestedDriver = $reflClass->newInstance($driver['mappingDirs']);
             }
 
             $metadataDriver->addDriver($nestedDriver, $driver['mappingNamespace']);
