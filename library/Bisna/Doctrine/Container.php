@@ -602,8 +602,16 @@ class Container
     private function startCacheInstance(array $config = array())
     {
         $adapterClass = $config['adapterClass'];
-        $adapter = new $adapterClass();
-
+        
+        // FilesystemCache (extending abstract FileCache class) expects the directory as a parameter in the constructor
+        if( $adapterClass == 'Doctrine\Common\Cache\FilesystemCache') {
+            $directory = isset($config['options']['directory']) ? $config['options']['directory'] : '/tmp/doctrine';
+            $extension = isset($config['options']['extension']) ? $config['options']['extension'] : null;
+            $adapter = new $adapterClass($directory, $extension);
+        } else {
+            $adapter = new $adapterClass();
+        }
+        
         // Define namespace for cache
         if (isset($config['namespace']) && ! empty($config['namespace'])) {
             $adapter->setNamespace($config['namespace']);
