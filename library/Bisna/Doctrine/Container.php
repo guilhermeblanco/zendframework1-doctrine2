@@ -847,6 +847,25 @@ class Container
         $configuration->setResultCacheImpl($this->getCacheInstance($config['resultCache']));
         $configuration->setQueryCacheImpl($this->getCacheInstance($config['queryCache']));
 
+        // SecondLevelCache configuration
+        if(isset($config['secondLevelCache'])) {
+            $configuration->setSecondLevelCacheEnabled(
+                $config['secondLevelCache']['enabled'] === true ||
+                !in_array($config['secondLevelCache']['enabled'], array("0", "false", false))
+            );
+            if ($configuration->isSecondLevelCacheEnabled()) {
+                $regionsConfigurationClass = $config['secondLevelCache']['regionsConfigurationClass'];
+                $factoryClass = $config['secondLevelCache']['cacheFactoryClass'];
+                $cache = $configuration->getResultCacheImpl(); //TODO make configurable?
+                $factory = new $factoryClass(new $regionsConfigurationClass(), $cache);
+                $configuration->getSecondLevelCacheConfiguration()->setCacheFactory($factory);
+                if (isset($config['secondLevelCache']['loggerClass'])) {
+                    $loggerClass = $config['secondLevelCache']['loggerClass'];
+                    $configuration->getSecondLevelCacheConfiguration()->setCacheLogger(new $loggerClass());
+                }
+            }
+        }
+
         // Metadata configuration
         $configuration->setMetadataDriverImpl($this->startORMMetadata($config['metadataDrivers']));
 
