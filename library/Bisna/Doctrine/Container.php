@@ -449,9 +449,9 @@ class Container
      * it will attempt to get the default DocumentManager.
      * If ODM DocumentManager name could not be found, NameNotFoundException is thrown.
      *
-     * @throws Bisna\Application\Exception\NameNotFoundException
+     * @throws \Core\Application\Exception\NameNotFoundException
      * @param string $dmName Optional ODM DocumentManager name
-     * @return Doctrine\ODM\MongoDB\DocumentManager
+     * @return \Doctrine\ODM\MongoDB\DocumentManager
      */
     public function getDocumentManager($dmName = null)
     {
@@ -608,8 +608,16 @@ class Container
     private function startCacheInstance(array $config = array())
     {
         $adapterClass = $config['adapterClass'];
-        $adapter = new $adapterClass();
-
+        
+        // FilesystemCache (extending abstract FileCache class) expects the directory as a parameter in the constructor
+        if( $adapterClass == 'Doctrine\Common\Cache\FilesystemCache') {
+            $directory = isset($config['options']['directory']) ? $config['options']['directory'] : '/tmp/doctrine';
+            $extension = isset($config['options']['extension']) ? $config['options']['extension'] : null;
+            $adapter = new $adapterClass($directory, $extension);
+        } else {
+            $adapter = new $adapterClass();
+        }
+        
         // Define namespace for cache
         if (isset($config['namespace']) && ! empty($config['namespace'])) {
             $adapter->setNamespace($config['namespace']);
@@ -745,7 +753,7 @@ class Container
      * Initialize the ODM Document Manager
      *
      * @param array $config
-     * @return Doctrine\ODM\MongoDB\DocumentManager
+     * @return \Doctrine\ODM\MongoDB\DocumentManager
      */
     private function startODMDocumentManager(array $config = array())
     {
@@ -779,7 +787,7 @@ class Container
      * Initialize ODM Configuration.
      *
      * @param array $config ODM DocumentManager configuration.
-     * @return Doctrine\ODM\MongoDB\Configuration
+     * @return \Doctrine\ODM\MongoDB\Configuration
      */
     private function startODMConfiguration(array $config = array())
     {
@@ -911,7 +919,7 @@ class Container
      * Initialize ODM Metadata drivers.
      *
      * @param array $config ODM Mapping drivers.
-     * @return Doctrine\ODM\MongoDB\Mapping\Driver\DriverChain
+     * @return \Doctrine\ODM\MongoDB\Mapping\Driver\DriverChain
      */
     private function startODMMetadata(array $config = array())
     {
@@ -967,7 +975,7 @@ class Container
 
                 $nestedDriver = $reflClass->newInstance($indexedReader, $driver['mappingDirs']);
             } else {
-                $nestedDriver = $reflClass->newInstance($indexedReader, $driver['mappingDirs']);
+                $nestedDriver = $reflClass->newInstance($driver['mappingDirs']);
             }
 
             $metadataDriver->addDriver($nestedDriver, $driver['mappingNamespace']);
