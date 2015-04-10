@@ -247,8 +247,8 @@ class Container
     {
         $odmConfig = $config['odm'];
         $defaultDocumentManagerName = isset($odmConfig['defaultDocumentManager'])
-                ? $odmConfig['defaultDocumentManager']
-                : $this->defaultDocumentManager;
+            ? $odmConfig['defaultDocumentManager']
+            : $this->defaultDocumentManager;
 
         unset($odmConfig['defaultDocumentManager']);
 
@@ -258,13 +258,13 @@ class Container
             'documentNamespaces' => array(),
             'connection' => $this->defaultConnection,
             'proxy' => array(
-                    'autoGenerateClasses' => true,
-                    'namespace' => 'Proxy',
-                    'dir' => APPLICATION_PATH . '/../library/Proxy'
+                'autoGenerateClasses' => true,
+                'namespace' => 'Proxy',
+                'dir' => APPLICATION_PATH . '/../library/Proxy'
             ),
             'hydrator' => array(
-                    'namespace' => 'Hydrators',
-                    'dir' => APPLICATION_PATH . '/../cache'
+                'namespace' => 'Hydrators',
+                'dir' => APPLICATION_PATH . '/../cache'
             ),
             'queryCache' => $this->defaultCacheInstance,
             'resultCache' => $this->defaultCacheInstance,
@@ -284,13 +284,13 @@ class Container
             }
         } else {
             $documentManagers = array(
-                    $this->defaultConnection => array_replace_recursive($defaultDocumentManager, $odmConfig)
+                $this->defaultConnection => array_replace_recursive($defaultDocumentManager, $odmConfig)
             );
         }
 
         return array(
-                'defaultDocumentManager' => $defaultDocumentManagerName,
-                'documentManagers' => $documentManagers
+            'defaultDocumentManager' => $defaultDocumentManagerName,
+            'documentManagers' => $documentManagers
         );
     }
 
@@ -322,6 +322,12 @@ class Container
             'queryCache'              => $this->defaultCacheInstance,
             'resultCache'             => $this->defaultCacheInstance,
             'metadataCache'           => $this->defaultCacheInstance,
+            'secondLevelCache'        => array(
+                'enabled'             => false,
+                'cache'               => $this->defaultCacheInstance,
+                'cacheFactoryClass'   => 'Doctrine\ORM\Cache\DefaultCacheFactory',
+                'regionsConfigurationClass' => 'Doctrine\ORM\Cache\RegionsConfiguration'
+            ),
             'metadataDrivers'         => array(),
             'namingStrategyClass'     => 'Doctrine\ORM\Mapping\DefaultNamingStrategy',
             'DQLFunctions'            => array(
@@ -389,10 +395,10 @@ class Container
      */
     public function getConnectionNames()
     {
-       $configuredConnections = array_keys($this->configuration['dbal']);
-       $loadedConnections = array_keys($this->connections);
+        $configuredConnections = array_keys($this->configuration['dbal']);
+        $loadedConnections = array_keys($this->connections);
 
-       return array_merge($configuredConnections, $loadedConnections);
+        return array_merge($configuredConnections, $loadedConnections);
     }
 
     /**
@@ -432,10 +438,10 @@ class Container
      */
     public function getCacheInstanceNames()
     {
-       $configuredInstances = array_keys($this->configuration['cache']);
-       $loadedInstances = array_keys($this->cacheInstances);
+        $configuredInstances = array_keys($this->configuration['cache']);
+        $loadedInstances = array_keys($this->cacheInstances);
 
-       return array_merge($configuredInstances, $loadedInstances);
+        return array_merge($configuredInstances, $loadedInstances);
     }
 
     /**
@@ -503,10 +509,10 @@ class Container
      */
     public function getEntityManagerNames()
     {
-       $configuredEMs = array_keys($this->configuration['orm']);
-       $loadedEMs = array_keys($this->entityManagers);
+        $configuredEMs = array_keys($this->configuration['orm']);
+        $loadedEMs = array_keys($this->entityManagers);
 
-       return array_merge($configuredEMs, $loadedEMs);
+        return array_merge($configuredEMs, $loadedEMs);
     }
 
     /**
@@ -855,6 +861,24 @@ class Container
         $configuration->setResultCacheImpl($this->getCacheInstance($config['resultCache']));
         $configuration->setQueryCacheImpl($this->getCacheInstance($config['queryCache']));
 
+        // SecondLevelCache configuration
+        if(isset($config['secondLevelCache'])) {
+            $configuration->setSecondLevelCacheEnabled(
+                $config['secondLevelCache']['enabled'] === true ||
+                !in_array($config['secondLevelCache']['enabled'], array("0", "false", false))
+            );
+            if ($configuration->isSecondLevelCacheEnabled()) {
+                $regionsConfigurationClass = $config['secondLevelCache']['regionsConfigurationClass'];
+                $factoryClass = $config['secondLevelCache']['cacheFactoryClass'];
+                $factory = new $factoryClass(new $regionsConfigurationClass(), $this->getCacheInstance($config['secondLevelCache']['cache']));
+                $configuration->getSecondLevelCacheConfiguration()->setCacheFactory($factory);
+                if (isset($config['secondLevelCache']['loggerClass'])) {
+                    $loggerClass = $config['secondLevelCache']['loggerClass'];
+                    $configuration->getSecondLevelCacheConfiguration()->setCacheLogger(new $loggerClass());
+                }
+            }
+        }
+
         // Metadata configuration
         $configuration->setMetadataDriverImpl($this->startORMMetadata($config['metadataDrivers']));
 
@@ -922,7 +946,7 @@ class Container
             if (method_exists($driver['adapterClass'], 'registerAnnotationClasses')) {
                 $driver['adapterClass']::registerAnnotationClasses();
             }
-            
+
             $reflClass = new \ReflectionClass($driver['adapterClass']);
             $nestedDriver = null;
 
@@ -1044,7 +1068,7 @@ class Container
     }
 
     /**
-     * Initialize ORM Metatada Annotation Registry driver
+     * Initialize ORM Metadata Annotation Registry driver
      *
      * @param array $config  ORM Annotation Registry configuration.
      */
@@ -1061,8 +1085,8 @@ class Container
         if (isset($config['annotationNamespaces']) && is_array($config['annotationNamespaces'])) {
             foreach($config['annotationNamespaces'] as $annotationNamespace) {
                 AnnotationRegistry::registerAutoloadNamespace(
-                        $annotationNamespace['namespace']
-                        , isset($annotationNamespace['includePath']) ? $annotationNamespace['includePath'] : null
+                    $annotationNamespace['namespace']
+                    , isset($annotationNamespace['includePath']) ? $annotationNamespace['includePath'] : null
                 );
             }
 
