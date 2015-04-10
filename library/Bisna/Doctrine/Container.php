@@ -1060,7 +1060,7 @@ class Container
     }
 
     /**
-     * Initialize ORM Metatada Annotation Registry driver
+     * Initialize ORM Metadata Annotation Registry driver
      *
      * @param array $config  ORM Annotation Registry configuration.
      */
