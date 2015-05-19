@@ -862,7 +862,7 @@ class Container
         $configuration->setQueryCacheImpl($this->getCacheInstance($config['queryCache']));
 
         // SecondLevelCache configuration
-        if(isset($config['secondLevelCache'])) {
+        if(isset($config['secondLevelCache']) && method_exists($configuration, 'setSecondLevelCacheEnabled')) {
             $configuration->setSecondLevelCacheEnabled(
                 $config['secondLevelCache']['enabled'] === true ||
                 !in_array($config['secondLevelCache']['enabled'], array("0", "false", false))
