@@ -1,0 +1,496 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Bisna: Zend Framework 1.X + Doctrine 2.X integration &mdash; Bisna: Doctrine + Zend Framework integration library v1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '1.0.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Bisna: Doctrine + Zend Framework integration library v1.0.0 documentation" href="index.html" />
+    <link rel="prev" title="Bisna: Doctrine 2/Zendframework Framework Integration Library" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Bisna: Doctrine 2/Zendframework Framework Integration Library"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">Bisna: Doctrine + Zend Framework integration library v1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="bisna-zend-framework-1-x-doctrine-2-x-integration">
+<h1>Bisna: Zend Framework 1.X + Doctrine 2.X integration<a class="headerlink" href="#bisna-zend-framework-1-x-doctrine-2-x-integration" title="Permalink to this headline">¶</a></h1>
+<p>Guilherme Blanco&#8217;s <a class="reference external" href="https://github.com/guilhermeblanco/ZendFramework1-Doctrine2">Bisna package</a> integrates <a class="reference external" href="http://www.doctrine-project.org/projects/orm">Doctrine 2</a> and <a class="reference external" href="http://framework.zend.com/">Zend Framework 1</a> using a custom Zend Framework application resource plug: <tt class="docutils literal"><span class="pre">Bisna\Application\Resource\Doctrine</span></tt>.</p>
+<p>Since configuration settings are stored in <tt class="docutils literal"><span class="pre">application.ini</span></tt>, the developer can easily switch between development and production environments. <tt class="docutils literal"><span class="pre">Bisna\Application\Resource\Doctrine</span></tt> creates the <a class="reference internal" href="#doctrine-container"><em>Bisna\Application\Doctrine\Container, the Doctrine Container</em></a> instance, which it stores in the Zend registry. This is the class you will retrieve
+and use in your action controllers. It is described in the <a class="reference internal" href="#container-api"><em>Doctrine Container API</em></a> section below.</p>
+<div class="section" id="configuring-the-bisna-application-resource">
+<h2>Configuring the Bisna Application Resource<a class="headerlink" href="#configuring-the-bisna-application-resource" title="Permalink to this headline">¶</a></h2>
+<p>The <tt class="docutils literal"><span class="pre">Bisna\Application\Resource\Doctrine</span></tt> class is a custom Zend Framework application resource plugin that parses the <tt class="docutils literal"><span class="pre">resources.doctrine</span></tt> sections of the <tt class="docutils literal"><span class="pre">application/configs/application.ini</span></tt> that are used to configure <strong>Doctrine 2</strong>.</p>
+<p>As the sample Bisna <tt class="docutils literal"><span class="pre">application.ini</span></tt> shows, you will first need to add these lines to your <tt class="docutils literal"><span class="pre">application.ini</span></tt> file, so Zend Framework can find find and load the plugin:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="c">; --------------------------</span>
+<span class="c">; PHP Specific Configuration</span>
+<span class="c">; --------------------------</span>
+<span class="na">includePaths.resource</span> <span class="o">=</span> <span class="s">APPLICATION &quot;/../library/Bisna/Application/Resource&quot;</span>
+<span class="c">; snip...</span>
+<span class="c">;</span>
+<span class="c">; ----------------------------------------</span>
+<span class="c">; Zend Framework Application Configuration</span>
+<span class="c">; ----------------------------------------</span>
+
+<span class="na">pluginPaths.Bisna\Application\Resource\</span> <span class="o">=</span> <span class="s">&quot;Bisna/Application/Resource&quot;</span>
+
+<span class="na">autoloaderNamespaces[]</span> <span class="o">=</span> <span class="s">Bisna</span>
+</pre></div>
+</div>
+<p>These lines were directly excerpted from the <tt class="docutils literal"><span class="pre">applicationi.ini</span></tt> in the <a class="reference external" href="https://github.com/guilhermeblanco/ZendFramework1-Doctrine2">Bisna package</a>.</p>
+</div>
+<div class="section" id="configuring-doctrine-2">
+<h2>Configuring Doctrine 2<a class="headerlink" href="#configuring-doctrine-2" title="Permalink to this headline">¶</a></h2>
+<p>There are four main Bisna application resource configuration sections:</p>
+<ul class="simple">
+<li>Class Loader</li>
+<li>Cache</li>
+<li>DBAL</li>
+<li>ORM</li>
+</ul>
+<div class="section" id="configuring-namespaces">
+<h3>Configuring Namespaces<a class="headerlink" href="#configuring-namespaces" title="Permalink to this headline">¶</a></h3>
+<p>To autoload the <strong>Doctrine</strong> namespace classes, you can simply add this line to your <tt class="docutils literal"><span class="pre">application.ini</span></tt></p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="na">autoloaderNamespaces[]</span> <span class="o">=</span> <span class="s">Doctrine</span>
+</pre></div>
+</div>
+<p>Zend Framework&#8217;s autoloader will now automatically load all classes in the Doctrine namespace (and all its sub–namespaces).</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This assumes, of course, that Doctrine is in your PHP <tt class="docutils literal"><span class="pre">include_path</span></tt>.</p>
+</div>
+<p>If you need to more fully customize autoloading, this is discussed below.</p>
+<p>Autoloading for the <strong>Symfony</strong> namespace classes—used by the Doctrine command line tool—needs to be configured separately. This is true, for example,
+if you installed Doctrine using pear</p>
+<div class="highlight-bash"><div class="highlight"><pre><span class="c"># pear install -a DoctrineORM</span>
+</pre></div>
+</div>
+<p>because, then, the Symfony components are installed under the Doctrine directory, in <tt class="docutils literal"><span class="pre">Doctrine\Symfony</span></tt>. The Zend autoloader cannot handle such an arrangement, and you must
+therefore separately configure Symfony autoloading. This can be done either in 1.) the <tt class="docutils literal"><span class="pre">application/Bootstrap.php</span></tt></p>
+<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+ <span class="k">class</span> <span class="nc">Bootstrap</span> <span class="k">extends</span> <span class="nx">Zend_Application_Bootstrap_Bootstrap</span>
+ <span class="p">{</span>
+     <span class="k">public</span> <span class="k">function</span> <span class="nf">_initAutoloaderNamespaces</span><span class="p">()</span>
+     <span class="p">{</span>
+         <span class="k">require_once</span> <span class="s1">&#39;Doctrine/Common/ClassLoader.php&#39;</span><span class="p">;</span>
+
+         <span class="nv">$autoloader</span> <span class="o">=</span> <span class="nx">\Zend_Loader_Autoloader</span><span class="o">::</span><span class="na">getInstance</span><span class="p">();</span>
+         <span class="nv">$symfonyAutoloader</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">\Doctrine\Common\ClassLoader</span><span class="p">(</span><span class="s1">&#39;Symfony&#39;</span><span class="p">,</span> <span class="s1">&#39;Doctrine&#39;</span><span class="p">);</span>
+         <span class="nv">$autoloader</span><span class="o">-&gt;</span><span class="na">pushAutoloader</span><span class="p">(</span><span class="k">array</span><span class="p">(</span><span class="nv">$symfonyAutoloader</span><span class="p">,</span> <span class="s1">&#39;loadClass&#39;</span><span class="p">),</span> <span class="s1">&#39;Symfony&#39;</span><span class="p">);</span>
+     <span class="p">}</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+<p>or in 2.) the <tt class="docutils literal"><span class="pre">resources.doctrine.classloader</span></tt> section—more fully described below—by adding these lines:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="c">; ------------------------------------------------------------------------------</span>
+<span class="c">; Doctrine Class Loader Configuration</span>
+<span class="c">; ------------------------------------------------------------------------------</span>
+
+<span class="na">resources.doctrine.classLoader.loaderClass</span> <span class="o">=</span> <span class="s">&quot;Doctrine\Common\ClassLoader&quot;</span>
+<span class="na">resources.doctrine.classLoader.loaderFile</span>  <span class="o">=</span> <span class="s">&quot;Doctrine/Common/ClassLoader.php&quot;</span>
+
+<span class="na">resources.doctrine.classLoader.loaders.symfony_console.namespace</span>   <span class="o">=</span> <span class="s">&quot;Symfony&quot;</span>
+<span class="na">resources.doctrine.classLoader.loaders.symfony_console.includePath</span> <span class="o">=</span> <span class="s">&quot;Doctrine&quot;</span>
+</pre></div>
+</div>
+<div class="admonition important">
+<p class="first admonition-title">Important</p>
+<p class="last">Again, this assumes, that Doctrine is in your PHP <tt class="docutils literal"><span class="pre">include_path</span></tt> and its Symfony components are in <tt class="docutils literal"><span class="pre">Doctrine/Symfony</span></tt>.</p>
+</div>
+<p>You can individually configure the include path for the following <strong>Doctrine 2</strong> namespaces</p>
+<ul class="simple">
+<li>Doctrine\Common</li>
+<li>Doctrine\DBAL</li>
+<li>Doctrine\ORM</li>
+<li>Symfony\Component\Console</li>
+<li>Symfony\Component\Yaml</li>
+</ul>
+<p>using the <tt class="docutils literal"><span class="pre">includePath</span></tt> and <tt class="docutils literal"><span class="pre">namespace</span></tt> entries shown below. In addition, you can also specify the class name and location of the autoloader. These lines, excerpted directly from
+the <tt class="docutils literal"><span class="pre">application.ini</span></tt> in the Bisna package, illustrate how:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="c">; Doctrine Common ClassLoader class and file</span>
+<span class="na">resources.doctrine.classLoader.loaderClass</span> <span class="o">=</span> <span class="s">&quot;Doctrine\Common\ClassLoader&quot;</span>
+<span class="na">resources.doctrine.classLoader.loaderFile</span>  <span class="o">=</span> <span class="s">APPLICATION_PATH &quot;/../library/vendor/Doctrine/lib/vendor/doctrine-common/lib/Doctrine/Common/ClassLoader.php&quot;</span>
+
+<span class="c">; Namespace loader for Doctrine\Common</span>
+<span class="na">resources.doctrine.classLoader.loaders.doctrine_common.namespace</span>   <span class="o">=</span> <span class="s">&quot;Doctrine\Common&quot;</span>
+<span class="na">resources.doctrine.classLoader.loaders.doctrine_common.includePath</span> <span class="o">=</span> <span class="s">APPLICATION_PATH &quot;/../library/vendor/Doctrine/lib/vendor/doctrine-common/lib&quot;</span>
+
+<span class="c">; Namespace loader for Doctrine\DBAL</span>
+<span class="na">resources.doctrine.classLoader.loaders.doctrine_dbal.namespace</span>   <span class="o">=</span> <span class="s">&quot;Doctrine\DBAL&quot;</span>
+<span class="na">resources.doctrine.classLoader.loaders.doctrine_dbal.includePath</span> <span class="o">=</span> <span class="s">APPLICATION_PATH &quot;/../library/vendor/Doctrine/lib/vendor/doctrine-dbal/lib&quot;</span>
+
+<span class="c">; Namespace loader for Doctrine\ORM</span>
+<span class="na">resources.doctrine.classLoader.loaders.doctrine_orm.namespace</span>   <span class="o">=</span> <span class="s">&quot;Doctrine\ORM&quot;</span>
+<span class="na">resources.doctrine.classLoader.loaders.doctrine_orm.includePath</span> <span class="o">=</span> <span class="s">APPLICATION_PATH &quot;/../library/vendor/Doctrine/lib&quot;</span>
+
+<span class="c">; Namespace loader for Symfony\Component\Console</span>
+<span class="na">resources.doctrine.classLoader.loaders.symfony_console.namespace</span>   <span class="o">=</span> <span class="s">&quot;Symfony\Component\Console&quot;</span>
+<span class="na">resources.doctrine.classLoader.loaders.symfony_console.includePath</span> <span class="o">=</span> <span class="s">APPLICATION_PATH &quot;/../library/vendor/Doctrine/lib/vendor&quot;</span>
+
+<span class="c">; Namespace loader for Symfony\Component\Yaml</span>
+<span class="na">resources.doctrine.classLoader.loaders.symfony_yaml.namespace</span>   <span class="o">=</span> <span class="s">&quot;Symfony\Component\Yaml&quot;</span>
+<span class="na">resources.doctrine.classLoader.loaders.symfony_yaml.includePath</span> <span class="o">=</span> <span class="s">APPLICATION_PATH &quot;/../library/vendor/Doctrine/lib/vendor&quot;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="configuring-the-cache">
+<h3>Configuring the Cache<a class="headerlink" href="#configuring-the-cache" title="Permalink to this headline">¶</a></h3>
+<p>You can define multiple cache connections. Currently, Doctrine 2 supports the following Cache drivers:</p>
+<ul class="simple">
+<li>APC</li>
+<li>Array</li>
+<li>Memcache</li>
+<li>Xcache</li>
+</ul>
+<p>If you attempt to retrieve a cache instance without a name, Bisna will attempt to grab the <tt class="docutils literal"><span class="pre">resources.doctrine.cache.defaultCacheInstance</span></tt> cache,
+whose default name is <tt class="docutils literal"><span class="pre">default</span></tt> To change the name of the default cache instance, alter this line:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="na">resources.doctrine.cache.defaultCacheInstance</span> <span class="o">=</span> <span class="s">my_cache_instance</span>
+</pre></div>
+</div>
+<p>All cache instances must have a name; here, for example, the <strong>Memcache</strong> driver is being used with multiple servers:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="c">; Cache Instance configuration for &quot;default&quot; cache</span>
+<span class="na">resources.doctrine.cache.instances.default.adapterClass</span> <span class="o">=</span> <span class="s">&quot;Doctrine\Common\Cache\MemcacheCache&quot;</span>
+<span class="na">resources.doctrine.cache.instances.default.namespace</span>    <span class="o">=</span> <span class="s">&quot;MyApplication_&quot;</span>
+
+<span class="c">; Server configuration (index &quot;0&quot;)</span>
+<span class="na">resources.doctrine.cache.instances.default.options.servers.0.host</span> <span class="o">=</span> <span class="s">localhost</span>
+<span class="na">resources.doctrine.cache.instances.default.options.servers.0.port</span> <span class="o">=</span> <span class="s">11211</span>
+<span class="na">resources.doctrine.cache.instances.default.options.servers.0.persistent</span>    <span class="o">=</span> <span class="s">true</span>
+<span class="na">resources.doctrine.cache.instances.default.options.servers.0.retryInterval</span> <span class="o">=</span> <span class="s">15</span>
+
+<span class="c">; Server configuration (index &quot;1&quot;)</span>
+<span class="na">resources.doctrine.cache.instances.default.options.servers.1.host</span> <span class="o">=</span> <span class="s">localhost</span>
+<span class="na">resources.doctrine.cache.instances.default.options.servers.1.port</span> <span class="o">=</span> <span class="s">11211</span>
+<span class="na">resources.doctrine.cache.instances.default.options.servers.1.persistent</span>    <span class="o">=</span> <span class="s">true</span>
+<span class="na">resources.doctrine.cache.instances.default.options.servers.1.weight</span>        <span class="o">=</span> <span class="s">1</span>
+<span class="na">resources.doctrine.cache.instances.default.options.servers.1.timeout</span>       <span class="o">=</span> <span class="s">1</span>
+<span class="na">resources.doctrine.cache.instances.default.options.servers.1.retryInterval</span> <span class="o">=</span> <span class="s">15</span>
+<span class="na">resources.doctrine.cache.instances.default.options.servers.1.status</span>        <span class="o">=</span> <span class="s">true</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="configuring-the-database-abstraction-layer">
+<h3>Configuring the Database Abstraction Layer<a class="headerlink" href="#configuring-the-database-abstraction-layer" title="Permalink to this headline">¶</a></h3>
+<p>Like the cache configuration, you can configure multiple database connections. The default connection is specified using <tt class="docutils literal"><span class="pre">resources.doctrine.dbal.defaultConnection</span></tt></p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="c">; Points to default connection to be used. Optional if only one connection is defined</span>
+<span class="na">resources.doctrine.dbal.defaultConnection</span> <span class="o">=</span> <span class="s">default</span>
+
+<span class="c">; DBAL Connection configuration for &quot;default&quot; connection</span>
+<span class="c">;resources.doctrine.dbal.connections.default.id = default</span>
+<span class="c">;resources.doctrine.dbal.connections.default.eventManagerClass  = &quot;Doctrine\Common\EventManager&quot;</span>
+<span class="c">;resources.doctrine.dbal.connections.default.eventSubscribers[] = &quot;DoctrineExtensions\Sluggable\SluggableSubscriber&quot;</span>
+<span class="c">;resources.doctrine.dbal.connections.default.configurationClass = &quot;Doctrine\DBAL\Configuration&quot;</span>
+<span class="c">;resources.doctrine.dbal.connections.default.sqlLoggerClass     = &quot;Doctrine\DBAL\Logging\EchoSQLLogger&quot;</span>
+
+<span class="c">; Database configuration</span>
+<span class="c">;resources.doctrine.dbal.connections.default.parameters.wrapperClass = &quot;&quot;</span>
+<span class="na">resources.doctrine.dbal.connections.default.parameters.driver</span>   <span class="o">=</span> <span class="s">&quot;pdo_mysql&quot;</span>
+<span class="na">resources.doctrine.dbal.connections.default.parameters.dbname</span>   <span class="o">=</span> <span class="s">&quot;fmm&quot;</span>
+<span class="na">resources.doctrine.dbal.connections.default.parameters.host</span> <span class="o">=</span> <span class="s">&quot;localhost&quot;</span>
+<span class="na">resources.doctrine.dbal.connections.default.parameters.port</span> <span class="o">=</span> <span class="s">3306</span>
+<span class="na">resources.doctrine.dbal.connections.default.parameters.user</span> <span class="o">=</span> <span class="s">&quot;root&quot;</span>
+<span class="na">resources.doctrine.dbal.connections.default.parameters.password</span> <span class="o">=</span> <span class="s">&quot;password&quot;</span>
+<span class="c">;resources.doctrine.dbal.connections.default.parameters.driverOptions.ATTR_USE_BUFFERED_QUERIES = true</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="configuring-orm">
+<h3>Configuring ORM<a class="headerlink" href="#configuring-orm" title="Permalink to this headline">¶</a></h3>
+<p>The <strong>ORM</strong> configuration section is fairly self–explanatory. <tt class="docutils literal"><span class="pre">resources.doctrine.orm.defaultEntityManager</span></tt> is optional. It
+is the name of the default entity manager.</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="c">; ------------------------------------------------------------------------------</span>
+<span class="c">; Doctrine ORM Configuration</span>
+<span class="c">; ------------------------------------------------------------------------------</span>
+
+<span class="c">; Points to default EntityManager to be used. Optional if only one EntityManager is defined</span>
+<span class="na">resources.doctrine.orm.defaultEntityManager</span> <span class="o">=</span> <span class="s">default</span>
+</pre></div>
+</div>
+<p>The configuration for the each named entity manager is given in the <tt class="docutils literal"><span class="pre">resources.doctrine.orm.entityManagers.&lt;name&gt;</span></tt> settings. Below is the
+configuration for our default entity manager:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="c">; EntityManager configuration for &quot;default&quot; manager</span>
+<span class="c">;resources.doctrine.orm.entityManagers.default.id = default</span>
+<span class="c">;resources.doctrine.orm.entityManagers.default.entityManagerClass   = &quot;Doctrine\ORM\EntityManager&quot;</span>
+<span class="c">;resources.doctrine.orm.entityManagers.default.configurationClass   = &quot;Doctrine\ORM\Configuration&quot;</span>
+
+<span class="na">resources.doctrine.orm.entityManagers.default.entityNamespaces.app</span> <span class="o">=</span> <span class="s">&quot;Square\Entity&quot;</span>
+<span class="na">resources.doctrine.orm.entityManagers.default.connection</span>     <span class="o">=</span> <span class="s">default</span>
+<span class="na">resources.doctrine.orm.entityManagers.default.proxy.autoGenerateClasses</span> <span class="o">=</span> <span class="s">true</span>
+<span class="na">resources.doctrine.orm.entityManagers.default.proxy.namespace</span>           <span class="o">=</span> <span class="s">&quot;Square\Entity\Proxy&quot;</span>
+<span class="na">resources.doctrine.orm.entityManagers.default.proxy.dir</span>                 <span class="o">=</span> <span class="s">APPLICATION_PATH &quot;/../library/Square/Entity/Proxy&quot;</span>
+
+<span class="c">;resources.doctrine.orm.entityManagers.default.metadataCache = default</span>
+<span class="c">;resources.doctrine.orm.entityManagers.default.queryCache    = default</span>
+<span class="c">;resources.doctrine.orm.entityManagers.default.resultCache   = default</span>
+<span class="c">;resources.doctrine.orm.entityManagers.default.DQLFunctions.numeric.PI = &quot;DoctrineExtensions\ORM\Query\Functions\Numeric\PiFunction&quot;</span>
+
+<span class="na">resources.doctrine.orm.entityManagers.default.metadataDrivers.annotationRegistry.annotationFiles[]</span>     <span class="o">=</span> <span class="s">APPLICATION_PATH &quot;/../library/vendors/Doctrine/ORM/Mapping/Driver/DoctrineAnnotations.php&quot;</span>
+
+<span class="c">;resources.doctrine.orm.entityManagers.default.metadataDrivers.annotationRegistry.annotationNamespaces.0.namespace   = &quot;Gedmo&quot;</span>
+<span class="c">;resources.doctrine.orm.entityManagers.default.metadataDrivers.annotationRegistry.annotationNamespaces.0.includePath = APPLICATION_PATH &quot;/../library/vendors&quot;</span>
+
+<span class="na">resources.doctrine.orm.entityManagers.default.metadataDrivers.drivers.0.adapterClass</span>          <span class="o">=</span> <span class="s">&quot;Doctrine\ORM\Mapping\Driver\AnnotationDriver&quot;</span>
+<span class="na">resources.doctrine.orm.entityManagers.default.metadataDrivers.drivers.0.mappingNamespace</span>      <span class="o">=</span> <span class="s">&quot;Square\Entity&quot;</span>
+<span class="na">resources.doctrine.orm.entityManagers.default.metadataDrivers.drivers.0.mappingDirs[]</span>         <span class="o">=</span> <span class="s">APPLICATION_PATH &quot;/../library/Square/Entity&quot;</span>
+<span class="na">resources.doctrine.orm.entityManagers.default.metadataDrivers.drivers.0.annotationReaderClass</span> <span class="o">=</span> <span class="s">&quot;Doctrine\Common\Annotations\AnnotationReader&quot;</span>
+<span class="na">resources.doctrine.orm.entityManagers.default.metadataDrivers.drivers.0.annotationReaderCache</span> <span class="o">=</span> <span class="s">default</span>
+
+<span class="c">;resources.doctrine.orm.entityManagers.default.metadataDrivers.drivers.0.annotationReaderNamespaces.App = &quot;Application\DoctrineExtensions\ORM\Mapping&quot;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="development-vs-production">
+<h3>Development vs Production<a class="headerlink" href="#development-vs-production" title="Permalink to this headline">¶</a></h3>
+<p>Since Zend Framework allows development settings to inherit all production settings with this syntax</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="k">[development : production]</span>
+</pre></div>
+</div>
+<p>it becomes trivial to configure the <strong>Doctrine 2</strong> development environment. During development, you would want to auto–generate proxies and cache using <tt class="docutils literal"><span class="pre">ArrayCache</span></tt>:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="k">[development : production]</span>
+<span class="na">phpSettings.display_startup_errors</span> <span class="o">=</span> <span class="s">1</span>
+<span class="na">phpSettings.display_errors</span> <span class="o">=</span> <span class="s">1</span>
+<span class="na">resources.frontController.params.displayExceptions</span> <span class="o">=</span> <span class="s">1</span>
+<span class="c">; snip . . .</span>
+<span class="c">; Doctrine 2 development settings</span>
+<span class="na">resources.doctrine.cache.instances.default.adapterClass</span> <span class="o">=</span> <span class="s">&quot;Doctrine\Common\Cache\ArrayCache&quot;</span>
+<span class="na">resources.doctrine.orm.entityManagers.default.proxy.autoGenerateClasses</span> <span class="o">=</span> <span class="s">true</span>
+</pre></div>
+</div>
+<p>The development environment will inherit all the <tt class="docutils literal"><span class="pre">[production]</span></tt> settings, overriding only two of its settings. In the <tt class="docutils literal"><span class="pre">[production]</span></tt> section, you would set auto–generate proxies to <strong>false</strong> and use a different caching mechanism, say, <tt class="docutils literal"><span class="pre">ApcCache</span></tt>:</p>
+<div class="highlight-ini"><div class="highlight"><pre><span class="k">[production]</span>
+<span class="c">; See Bisna application.ini for complete settings.</span>
+<span class="na">resources.doctrine.cache.instances.default.adapterClass</span> <span class="o">=</span> <span class="s">&quot;Doctrine\Common\Cache\ApcCache&quot;</span>
+<span class="c">; snip...</span>
+<span class="na">resources.doctrine.orm.entityManagers.default.proxy.autoGenerateClasses</span> <span class="o">=</span> <span class="s">false</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="bisna-application-doctrine-container-the-doctrine-container">
+<span id="doctrine-container"></span><h3><tt class="docutils literal"><span class="pre">Bisna\Application\Doctrine\Container</span></tt>, the Doctrine Container<a class="headerlink" href="#bisna-application-doctrine-container-the-doctrine-container" title="Permalink to this headline">¶</a></h3>
+<p>In your action controllers, you can retrieve the Doctrine Container <tt class="docutils literal"><span class="pre">Bisna\Application\Resource\Container</span></tt> from the Zend registry.</p>
+<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+
+<span class="k">namespace</span> <span class="nx">Bisna\Controller</span><span class="p">;</span>
+
+<span class="sd">/**</span>
+<span class="sd"> * Action class.</span>
+<span class="sd"> *</span>
+<span class="sd"> * @author Guilherme Blanco &lt;guilhermeblanco@hotmail.com&gt;</span>
+<span class="sd"> */</span>
+<span class="k">class</span> <span class="nc">Action</span> <span class="k">extends</span> <span class="nx">\Zend_Controller_Action</span> <span class="p">{</span>
+    <span class="sd">/**</span>
+<span class="sd">     * Retrieve the Doctrine Container.</span>
+<span class="sd">     *</span>
+<span class="sd">     * @return Bisna\Application\Container\DoctrineContainer</span>
+<span class="sd">     */</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">getDoctrineContainer</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="k">return</span> <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">doctrine</span> <span class="o">=</span> <span class="nx">Zend_Registry</span><span class="o">::</span><span class="na">get</span><span class="p">(</span><span class="s1">&#39;doctrine&#39;</span><span class="p">);</span>
+    <span class="c1">// or: return $this-&gt;getInvokeArg(&#39;bootstrap&#39;)-&gt;getResource(&#39;doctrine&#39;);</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="doctrine-container-api">
+<span id="container-api"></span><h3>Doctrine Container API<a class="headerlink" href="#doctrine-container-api" title="Permalink to this headline">¶</a></h3>
+<p>The following API exposes all available Doctrine Container methods to be used by developers:</p>
+<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+
+    <span class="k">namespace</span> <span class="nx">Bisna\Application\Container</span><span class="p">;</span>
+
+    <span class="sd">/**</span>
+<span class="sd">     * Doctrine Container class.</span>
+<span class="sd">     *</span>
+<span class="sd">     * @license http://www.opensource.org/licenses/lgpl-license.php LGPL</span>
+<span class="sd">     * @link www.doctrine-project.org</span>
+<span class="sd">     *</span>
+<span class="sd">     * @author Guilherme Blanco &lt;guilhermeblanco@hotmail.com&gt;</span>
+<span class="sd">     */</span>
+    <span class="k">class</span> <span class="nc">DoctrineContainer</span> <span class="p">{</span>
+        <span class="sd">/**</span>
+<span class="sd">         * Retrieve Cache Instance based on its name. If no argument is provided,</span>
+<span class="sd">         * it will attempt to get the default Instance.</span>
+<span class="sd">         * If Cache Instance name could not be found, NameNotFoundException is thrown.</span>
+<span class="sd">         *</span>
+<span class="sd">         * @throws Bisna\Application\Exception\NameNotFoundException</span>
+<span class="sd">         *</span>
+<span class="sd">         * @param string $cacheName Optional Cache Instance name</span>
+<span class="sd">         *</span>
+<span class="sd">         * @return Doctrine\Common\Cache\Cache Cache Instance</span>
+<span class="sd">         */</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">getCacheInstance</span><span class="p">(</span><span class="nv">$cacheName</span> <span class="o">=</span> <span class="k">null</span><span class="p">);</span>
+
+        <span class="sd">/**</span>
+<span class="sd">         * Retrieve DBAL Connection based on its name. If no argument is provided,</span>
+<span class="sd">         * it will attempt to get the default Connection.</span>
+<span class="sd">         * If DBAL Connection could not be retrieved, NameNotFoundException is thrown.</span>
+<span class="sd">         *</span>
+<span class="sd">         * @throws Bisna\Application\Exception\NameNotFoundException</span>
+<span class="sd">         *</span>
+<span class="sd">         * @param string $connName Optional DBAL Connection name</span>
+<span class="sd">         *</span>
+<span class="sd">         * @return Doctrine\DBAL\Connection DBAL Connection</span>
+<span class="sd">         */</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">getConnection</span><span class="p">(</span><span class="nv">$connName</span> <span class="o">=</span> <span class="k">null</span><span class="p">);</span>
+
+        <span class="sd">/**</span>
+<span class="sd">         * Retrieve ORM EntityManager based on its name. If no argument provided,</span>
+<span class="sd">         * it will attempt to get the default EntityManager.</span>
+<span class="sd">         * If ORM EntityManager could not be retrieved, NameNotFoundException is thrown.</span>
+<span class="sd">         *</span>
+<span class="sd">         * @throws Bisna\Application\Exception\NameNotFoundException</span>
+<span class="sd">         *</span>
+<span class="sd">         * @param string $emName Optional ORM EntityManager name</span>
+<span class="sd">         *</span>
+<span class="sd">         * @return Doctrine\ORM\EntityManager ORM EntityManager</span>
+<span class="sd">         */</span>
+        <span class="k">public</span> <span class="k">function</span> <span class="nf">getEntityManager</span><span class="p">(</span><span class="nv">$emName</span> <span class="o">=</span> <span class="k">null</span><span class="p">);</span>
+ <span class="p">}</span>
+</pre></div>
+</div>
+<div class="section" id="action-controller-example">
+<h4>Action Controller Example<a class="headerlink" href="#action-controller-example" title="Permalink to this headline">¶</a></h4>
+<div class="highlight-php"><div class="highlight"><pre><span class="cp">&lt;?php</span>
+
+<span class="k">class</span> <span class="nc">Catalog_ItemController</span> <span class="k">extends</span> <span class="nx">Zend_Controller_Action</span> <span class="p">{</span>
+
+  <span class="k">protected</span> <span class="nv">$em</span> <span class="o">=</span> <span class="k">null</span><span class="p">;</span>
+
+  <span class="k">public</span> <span class="k">function</span> <span class="nf">init</span><span class="p">()</span>
+  <span class="p">{</span>
+      <span class="nv">$this</span><span class="o">-&gt;</span><span class="na">em</span> <span class="o">=</span> <span class="nx">\Zend_Registry</span><span class="o">::</span><span class="na">get</span><span class="p">(</span><span class="s1">&#39;doctrine&#39;</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">getEntityManager</span><span class="p">();</span>
+
+  <span class="p">}</span>
+    <span class="c1">// action to display a catalog item</span>
+  <span class="k">public</span> <span class="k">function</span> <span class="nf">displayAction</span><span class="p">()</span>
+  <span class="p">{</span>
+
+    <span class="nv">$input</span><span class="o">-&gt;</span><span class="na">setData</span><span class="p">(</span><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">getRequest</span><span class="p">()</span><span class="o">-&gt;</span><span class="na">getParams</span><span class="p">());</span>
+
+        <span class="k">try</span> <span class="p">{</span>
+      <span class="nv">$stamp_item</span> <span class="o">=</span> <span class="nv">$em</span><span class="o">-&gt;</span><span class="na">getRepository</span><span class="p">(</span><span class="s1">&#39;\Square\Entity\StampItem&#39;</span><span class="p">)</span><span class="o">-&gt;</span><span class="na">find</span><span class="p">(</span><span class="nv">$input</span><span class="o">-&gt;</span><span class="na">id</span><span class="p">);</span>
+
+      <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nb">is_null</span><span class="p">(</span><span class="nv">$stamp_item</span><span class="p">))</span> <span class="p">{</span>
+
+        <span class="c1">// snip...</span>
+      <span class="p">}</span>
+    <span class="k">catch</span> <span class="p">(</span><span class="nx">Exception</span> <span class="nv">$e</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="c1">// snip...</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Bisna: Zend Framework 1.X + Doctrine 2.X integration</a><ul>
+<li><a class="reference internal" href="#configuring-the-bisna-application-resource">Configuring the Bisna Application Resource</a></li>
+<li><a class="reference internal" href="#configuring-doctrine-2">Configuring Doctrine 2</a><ul>
+<li><a class="reference internal" href="#configuring-namespaces">Configuring Namespaces</a></li>
+<li><a class="reference internal" href="#configuring-the-cache">Configuring the Cache</a></li>
+<li><a class="reference internal" href="#configuring-the-database-abstraction-layer">Configuring the Database Abstraction Layer</a></li>
+<li><a class="reference internal" href="#configuring-orm">Configuring ORM</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#usage">Usage</a><ul>
+<li><a class="reference internal" href="#development-vs-production">Development vs Production</a></li>
+<li><a class="reference internal" href="#bisna-application-doctrine-container-the-doctrine-container"><tt class="docutils literal"><span class="pre">Bisna\Application\Doctrine\Container</span></tt>, the Doctrine Container</a></li>
+<li><a class="reference internal" href="#doctrine-container-api">Doctrine Container API</a><ul>
+<li><a class="reference internal" href="#action-controller-example">Action Controller Example</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Bisna: Doctrine 2/Zendframework Framework Integration Library</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/bisna.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="index.html" title="Bisna: Doctrine 2/Zendframework Framework Integration Library"
+             >previous</a> |</li>
+        <li><a href="index.html">Bisna: Doctrine + Zend Framework integration library v1.0.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright .
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.1.
+    </div>
+  </body>
+</html>
