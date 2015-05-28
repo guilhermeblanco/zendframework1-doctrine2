@@ -58,6 +58,10 @@ class Container
      */
     private $entityManagers = array();
 
+    /*
+     * @var array Original config passed in constructor
+     */
+    private $_constructorConfig = null;
 
     /**
      * Constructor.
@@ -66,6 +70,10 @@ class Container
      */
     public function __construct(array $config = array())
     {
+
+        //store original config in case entity manager needs to be reset
+        $this->_constructorConfig = $config;
+
         // Registering Class Loaders
         if (isset($config['classLoader'])) {
             $this->registerClassLoaders($config['classLoader']);
@@ -501,6 +509,19 @@ class Container
 
         return $this->entityManagers[$emName];
     }
+
+    /**
+     * Reset a given entity manager.  Note this re-constructs the current object as well.
+     * 
+     * @return array
+     */
+    public function resetEntityManager($emName = null)
+    {
+        $emName = $emName ?: $this->defaultEntityManager;
+        unset($this->entityManagers[$emName]);
+        $this->__construct($this->_constructorConfig);
+        return $this->getEntityManager($emName);
+    }    
 
     /**
      * Retrieves a list of names for all Entity Managers configured and/or loaded
