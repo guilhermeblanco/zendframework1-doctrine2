@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 
 // Define path to application directory
@@ -73,6 +74,9 @@ $cli->addCommands(array(
     new \Doctrine\ORM\Tools\Console\Command\ConvertMappingCommand(),
     new \Doctrine\ORM\Tools\Console\Command\RunDqlCommand(),
     new \Doctrine\ORM\Tools\Console\Command\ValidateSchemaCommand(),
+
+    // DataFixture Commands
+    new \Bisna\Command\LoadDataFixturesDoctrineCommand(),
 
 ));
 
