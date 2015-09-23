@@ -610,7 +610,7 @@ class Container
         $adapterClass = $config['adapterClass'];
         
         // FilesystemCache (extending abstract FileCache class) expects the directory as a parameter in the constructor
-        if( $adapterClass == 'Doctrine\Common\Cache\FilesystemCache') {
+        if( strrpos($adapterClass, 'FilesystemCache') !== FALSE || strrpos($adapterClass, 'FileCache') !== FALSE ) {
             $directory = isset($config['options']['directory']) ? $config['options']['directory'] : '/tmp/doctrine';
             $extension = isset($config['options']['extension']) ? $config['options']['extension'] : null;
             $adapter = new $adapterClass($directory, $extension);
